@@ -1,0 +1,3 @@
+// Copy to LocalSigning.xcconfig (gitignored) and fill in your values.
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+APP_BUNDLE_ID = com.yourcompany.BambuBeFree

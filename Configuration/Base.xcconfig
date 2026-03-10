@@ -1,0 +1,9 @@
+// Default open-source configuration
+DEVELOPMENT_TEAM =
+CODE_SIGN_STYLE = Automatic
+CODE_SIGN_IDENTITY = Apple Development
+
+APP_BUNDLE_ID = com.bambubefree.app
+APP_GROUP_ID = group.$(APP_BUNDLE_ID)
+
+#include? "LocalSigning.xcconfig"

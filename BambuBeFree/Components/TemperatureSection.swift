@@ -1,0 +1,52 @@
+import BambuModels
+import BambuUI
+import SwiftUI
+
+struct TemperatureSection: View {
+    @Bindable var viewModel: DashboardViewModel
+
+    private var state: PrinterAttributes.ContentState {
+        viewModel.contentState
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let nozzle = state.nozzleTemp {
+                TemperatureGauge(
+                    label: "Nozzle",
+                    icon: "flame.fill",
+                    current: nozzle,
+                    target: state.nozzleTargetTemp,
+                    range: 0...300,
+                    editable: viewModel.isConnected
+                ) { viewModel.setNozzleTemp($0) }
+            }
+            if let bed = state.bedTemp {
+                TemperatureGauge(
+                    label: "Bed",
+                    icon: "square.fill",
+                    current: bed,
+                    target: state.bedTargetTemp,
+                    range: 0...110,
+                    editable: viewModel.isConnected
+                ) { viewModel.setBedTemp($0) }
+            }
+            if let chamber = state.chamberTemp, chamber > 0 {
+                TemperatureGauge(
+                    label: "Chamber",
+                    icon: "wind",
+                    current: chamber,
+                    target: nil,
+                    range: nil,
+                    editable: false
+                ) { _ in }
+            }
+        }
+        .padding()
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+#Preview {
+    TemperatureSection(viewModel: .preview)
+}
