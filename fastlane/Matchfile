@@ -1,0 +1,9 @@
+git_url      ENV["MATCH_GIT_URL"]
+git_branch   "main"
+storage_mode "git"
+type         "appstore"
+
+app_identifier [
+  ENV["APP_BUNDLE_ID"] || "com.bambubefree.app",
+  "#{ENV['APP_BUNDLE_ID'] || 'com.bambubefree.app'}.widgets"
+]

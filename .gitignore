@@ -15,3 +15,22 @@ build
 # Credentials & secrets 
 **/Configuration/LocalSigning.xcconfig
 **/BambuBeFree/GoogleService-Info.plist
+
+# Fastlane
+fastlane/metadata/
+fastlane/screenshots/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/test_output/
+
+# Ruby / Bundler
+vendor/bundle/
+.bundle/
+
+# Environment
+.env*
+
+# Archives and IPAs
+*.ipa
+*.dSYM.zip
+*.xcarchive
