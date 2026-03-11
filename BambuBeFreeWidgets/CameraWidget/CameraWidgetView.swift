@@ -8,7 +8,7 @@ struct CameraWidgetView: View {
 
     var body: some View {
         switch entry.state {
-        case .snapshot(let imageData, let capturedAt):
+        case let .snapshot(imageData, capturedAt):
             if let uiImage = UIImage(data: imageData) {
                 snapshotView(image: uiImage, capturedAt: capturedAt)
             } else {
@@ -16,7 +16,7 @@ struct CameraWidgetView: View {
             }
         case .loading:
             loadingView
-        case .error(let message):
+        case let .error(message):
             errorView(message: message)
         case .notConfigured:
             notConfiguredView

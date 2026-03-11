@@ -1,11 +1,13 @@
 import Foundation
 
 public enum PrinterType: String, CaseIterable, Identifiable, Sendable {
-    case auto = "auto"
-    case rtsp = "rtsp"
-    case tcp = "tcp"
+    case auto
+    case rtsp
+    case tcp
 
-    public var id: String { rawValue }
+    public var id: String {
+        rawValue
+    }
 
     public var displayName: LocalizedStringResource {
         switch self {

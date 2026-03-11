@@ -2,9 +2,9 @@ import Foundation
 
 /// A known filament profile with its Bambu `filament_id` (used as `tray_info_idx` in MQTT commands).
 public struct FilamentPreset: Identifiable, Hashable, Sendable {
-    public let id: String        // filament_id, e.g. "GFL99"
-    public let name: String      // Display name, e.g. "Generic PLA"
-    public let trayType: String  // Material type, e.g. "PLA"
+    public let id: String // filament_id, e.g. "GFL99"
+    public let name: String // Display name, e.g. "Generic PLA"
+    public let trayType: String // Material type, e.g. "PLA"
     public let nozzleTempMin: Int
     public let nozzleTempMax: Int
 

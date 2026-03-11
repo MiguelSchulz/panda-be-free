@@ -9,11 +9,11 @@ struct PrintStateWidgetView: View {
 
     var body: some View {
         switch entry.state {
-        case .data(let contentState):
+        case let .data(contentState):
             dataView(state: contentState)
         case .loading:
             loadingView
-        case .error(let message):
+        case let .error(message):
             errorView(message: message)
         case .notConfigured:
             notConfiguredView

@@ -4,36 +4,36 @@ import SwiftUI
 @Observable
 public final class PrinterState {
     // Raw MQTT values
-    public var gcodeState: String = "UNKNOWN"
+    public var gcodeState = "UNKNOWN"
     public var stgCur: Int = -1
-    public var progress: Int = 0
-    public var remainingMinutes: Int = 0
-    public var jobName: String = ""
-    public var layerNum: Int = 0
-    public var totalLayers: Int = 0
-    public var nozzleTemp: Int = 0
-    public var nozzleTargetTemp: Int = 0
-    public var bedTemp: Int = 0
-    public var bedTargetTemp: Int = 0
-    public var chamberTemp: Int = 0
+    public var progress = 0
+    public var remainingMinutes = 0
+    public var jobName = ""
+    public var layerNum = 0
+    public var totalLayers = 0
+    public var nozzleTemp = 0
+    public var nozzleTargetTemp = 0
+    public var bedTemp = 0
+    public var bedTargetTemp = 0
+    public var chamberTemp = 0
 
     // Fan speeds (0–255, from fan_gear or converted from 0–15)
-    public var partFanSpeed: Int = 0
-    public var auxFanSpeed: Int = 0
-    public var chamberFanSpeed: Int = 0
-    public var heatbreakFanSpeed: Int = 0
+    public var partFanSpeed = 0
+    public var auxFanSpeed = 0
+    public var chamberFanSpeed = 0
+    public var heatbreakFanSpeed = 0
 
     public var airductMode: Int = -1 // -1=unknown, 0=cooling, 1=heating
 
-    public var homeFlag: Int = 0 // 0 = not homed, non-zero = homed
-    public var chamberLightOn: Bool = false
+    public var homeFlag = 0 // 0 = not homed, non-zero = homed
+    public var chamberLightOn = false
 
     // AMS
     public var amsUnits: [AMSUnit] = []
-    public var activeTrayIndex: Int? = nil // nil=none, parsed from tray_now
+    public var activeTrayIndex: Int? // nil=none, parsed from tray_now
     private var pendingModuleVersions: [AMSModuleVersion] = [] // cached until AMS units exist
 
-    public var isConnected: Bool = false
+    public var isConnected = false
     public var lastUpdated: Date?
 
     public init() {}
@@ -117,11 +117,11 @@ public final class PrinterState {
                 if let v = parsed.dryTime { unit.dryTimeRemaining = v }
 
                 for parsedTray in parsed.trays {
-                    guard parsedTray.id >= 0 && parsedTray.id < 4 else { continue }
+                    guard parsedTray.id >= 0, parsedTray.id < 4 else { continue }
                     var tray = unit.trays[parsedTray.id]
 
                     // Empty tray: only has "id", no type/color/remain
-                    if parsedTray.trayType == nil && parsedTray.trayColor == nil && parsedTray.remain == nil {
+                    if parsedTray.trayType == nil, parsedTray.trayColor == nil, parsedTray.remain == nil {
                         tray.materialType = nil
                         tray.color = nil
                         tray.colorHex = nil
@@ -162,7 +162,7 @@ public final class PrinterState {
             pendingModuleVersions = modules
         }
         // Apply cached module versions to AMS units
-        if !pendingModuleVersions.isEmpty && !amsUnits.isEmpty {
+        if !pendingModuleVersions.isEmpty, !amsUnits.isEmpty {
             for mod in pendingModuleVersions {
                 if let unit = amsUnits.first(where: { $0.id == mod.id }) {
                     unit.hwVersion = mod.hwVer

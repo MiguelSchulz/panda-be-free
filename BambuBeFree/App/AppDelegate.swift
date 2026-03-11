@@ -4,8 +4,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     static var orientationLock: UIInterfaceOrientationMask = .portrait
 
     func application(
-        _ application: UIApplication,
-        supportedInterfaceOrientationsFor window: UIWindow?
+        _: UIApplication,
+        supportedInterfaceOrientationsFor _: UIWindow?
     ) -> UIInterfaceOrientationMask {
         Self.orientationLock
     }

@@ -71,7 +71,7 @@ public struct FanGauge: View {
             isFocused = true
         }
         .onChange(of: isFocused) { _, focused in
-            if !focused && isEditing {
+            if !focused, isEditing {
                 submitValue()
             }
         }

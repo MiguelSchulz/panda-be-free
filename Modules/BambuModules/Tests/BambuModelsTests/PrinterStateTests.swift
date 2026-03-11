@@ -1,9 +1,8 @@
-import Testing
 @testable import BambuModels
+import Testing
 
 @Suite("Printer State")
 struct PrinterStateTests {
-
     // MARK: - apply() Partial Updates
 
     @Test("apply() updates only present fields")

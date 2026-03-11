@@ -10,7 +10,8 @@ public struct AMSTraySnapshot: Codable, Sendable {
     public var isBambuFilament: Bool
 
     public init(id: Int, materialType: String? = nil, colorHex: String? = nil,
-                remainPercent: Int? = nil, isBambuFilament: Bool = false) {
+                remainPercent: Int? = nil, isBambuFilament: Bool = false)
+    {
         self.id = id
         self.materialType = materialType
         self.colorHex = colorHex
@@ -41,11 +42,14 @@ public struct AMSUnitSnapshot: Codable, Sendable {
     public var dryTimeRemaining: Int
     public var trays: [AMSTraySnapshot]
 
-    public var isDrying: Bool { dryTimeRemaining > 0 }
+    public var isDrying: Bool {
+        dryTimeRemaining > 0
+    }
 
     public init(id: Int, amsTypeName: String? = nil, humidityLevel: Int = 0,
                 humidityRaw: Int = 0, temperature: Double = 0,
-                dryTimeRemaining: Int = 0, trays: [AMSTraySnapshot] = []) {
+                dryTimeRemaining: Int = 0, trays: [AMSTraySnapshot] = [])
+    {
         self.id = id
         self.amsTypeName = amsTypeName
         self.humidityLevel = humidityLevel

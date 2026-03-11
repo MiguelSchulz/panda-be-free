@@ -22,7 +22,7 @@ enum AMSWidgetState: Sendable {
 // MARK: - Timeline Provider
 
 struct AMSWidgetProvider: TimelineProvider {
-    func placeholder(in context: Context) -> AMSWidgetEntry {
+    func placeholder(in _: Context) -> AMSWidgetEntry {
         AMSWidgetEntry(date: .now, state: .loading)
     }
 
@@ -44,7 +44,7 @@ struct AMSWidgetProvider: TimelineProvider {
         }
     }
 
-    func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<AMSWidgetEntry>) -> Void) {
+    func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<AMSWidgetEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = AMSWidgetEntry(date: .now, state: .notConfigured)
             let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))

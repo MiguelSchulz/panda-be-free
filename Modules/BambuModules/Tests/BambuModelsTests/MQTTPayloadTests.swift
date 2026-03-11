@@ -1,10 +1,9 @@
-import Testing
-import Foundation
 @testable import BambuModels
+import Foundation
+import Testing
 
 @Suite("MQTT Payload Parsing")
 struct MQTTPayloadTests {
-
     // MARK: - Invalid Input
 
     @Test("Returns nil for invalid JSON")
@@ -14,9 +13,9 @@ struct MQTTPayloadTests {
     }
 
     @Test("Returns nil for JSON without 'print' key")
-    func missingPrintKey() {
+    func missingPrintKey() throws {
         let json: [String: Any] = ["system": ["command": "test"]]
-        let data = try! JSONSerialization.data(withJSONObject: json)
+        let data = try JSONSerialization.data(withJSONObject: json)
         #expect(BambuMQTTPayload.parse(from: data) == nil)
     }
 

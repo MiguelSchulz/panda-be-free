@@ -1,0 +1,20 @@
+--exclude Apps/OneTouch/Targets/Shared/LocalizedStrings.swift
+--exclude Apps/OneTouch/Targets/Shared/Architecture/App Modules/LocalizedFactory/Localized+Setup.swift
+--exclude Modules/Core/Localized/Sources/LocalizedInterfaces.swift
+--exclude Modules/Core/Localized/Sources/LocalizedMock.swift
+
+--redundantType inferred
+--someany false
+--ranges no-space
+--minversion 0.57.2
+
+# Breaks build
+--disable preferForLoop
+--disable preferKeyPath
+--disable redundantReturn
+--disable redundantSelf
+
+# Disabled after discussion
+--disable trailingCommas
+--disable strongOutlets
+--disable indent

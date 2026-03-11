@@ -12,7 +12,8 @@ public struct AMSParsedUnit {
 
     public init(id: Int, hwVersion: String? = nil, humidity: Int? = nil,
                 humidityRaw: Int? = nil, temp: Double? = nil, dryTime: Int? = nil,
-                trays: [AMSParsedTray] = []) {
+                trays: [AMSParsedTray] = [])
+    {
         self.id = id
         self.hwVersion = hwVersion
         self.humidity = humidity
@@ -38,7 +39,8 @@ public struct AMSParsedTray {
     public init(id: Int, trayType: String? = nil, trayColor: String? = nil,
                 remain: Int? = nil, nozzleTempMin: Int? = nil, nozzleTempMax: Int? = nil,
                 trayTemp: Int? = nil, trayTime: Int? = nil, traySubBrands: String? = nil,
-                trayInfoIdx: String? = nil) {
+                trayInfoIdx: String? = nil)
+    {
         self.id = id
         self.trayType = trayType
         self.trayColor = trayColor
@@ -68,17 +70,17 @@ public struct BambuMQTTPayload {
     public var layerNum: Int?
     public var totalLayerNum: Int?
     public var chamberLightOn: Bool?
-    public var partFanSpeed: Int?      // 0–255 (from fan_gear or converted from 0–15)
-    public var auxFanSpeed: Int?       // 0–255
-    public var chamberFanSpeed: Int?   // 0–255
-    public var heatbreakFanSpeed: Int?  // 0–255 (converted from 0–15)
-    public var airductMode: Int?       // device.airduct.modeCur (0=cooling, 1=heating)
-    public var homeFlag: Int?           // 0 = not homed, non-zero = homed
+    public var partFanSpeed: Int? // 0–255 (from fan_gear or converted from 0–15)
+    public var auxFanSpeed: Int? // 0–255
+    public var chamberFanSpeed: Int? // 0–255
+    public var heatbreakFanSpeed: Int? // 0–255 (converted from 0–15)
+    public var airductMode: Int? // device.airduct.modeCur (0=cooling, 1=heating)
+    public var homeFlag: Int? // 0 = not homed, non-zero = homed
 
     // AMS
     public var amsUnits: [AMSParsedUnit]?
-    public var trayNow: String?         // "255"=none, "254"=external, else amsId*4+trayId
-    public var trayIsBblBits: String?   // hex bitmask of Bambu-branded trays
+    public var trayNow: String? // "255"=none, "254"=external, else amsId*4+trayId
+    public var trayIsBblBits: String? // hex bitmask of Bambu-branded trays
 
     /// AMS module versions from info.module (hw_ver, name, product_name)
     public var amsModuleVersions: [AMSModuleVersion]?
@@ -146,7 +148,8 @@ public struct BambuMQTTPayload {
 
         // Airduct mode: device.airduct.modeCur (0=cooling, 1=heating)
         if let airduct = (printData["device"] as? [String: Any])?["airduct"] as? [String: Any],
-           let modeCur = airduct["modeCur"] as? Int {
+           let modeCur = airduct["modeCur"] as? Int
+        {
             payload.airductMode = modeCur
         }
 
@@ -154,7 +157,8 @@ public struct BambuMQTTPayload {
         if let lightsReport = printData["lights_report"] as? [[String: Any]] {
             for light in lightsReport {
                 if light["node"] as? String == "chamber_light",
-                   let mode = light["mode"] as? String {
+                   let mode = light["mode"] as? String
+                {
                     payload.chamberLightOn = (mode == "on")
                 }
             }
@@ -163,7 +167,8 @@ public struct BambuMQTTPayload {
         // Chamber temp: newer firmware uses device.ctc.info.temp, legacy uses chamber_temper
         if let ctcTemp = (printData["device"] as? [String: Any])?["ctc"]
             .flatMap({ $0 as? [String: Any] })?["info"]
-            .flatMap({ $0 as? [String: Any] })?["temp"] as? Int {
+            .flatMap({ $0 as? [String: Any] })?["temp"] as? Int
+        {
             payload.chamberTemper = Double(ctcTemp & 0xFFFF)
         } else if let chamberTemp = printData["chamber_temper"] as? Double {
             payload.chamberTemper = chamberTemp
@@ -242,7 +247,7 @@ public struct BambuMQTTPayload {
 
 /// AMS module version info from info.module MQTT messages.
 public struct AMSModuleVersion {
-    public let id: Int       // AMS unit index (0, 1, 2, ...)
+    public let id: Int // AMS unit index (0, 1, 2, ...)
     public let hwVer: String // e.g. "AMS08", "N3F05", "N3S05"
 
     public init(id: Int, hwVer: String) {

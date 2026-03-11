@@ -20,7 +20,7 @@ enum CameraWidgetState: Sendable {
 // MARK: - Timeline Provider
 
 struct CameraWidgetProvider: TimelineProvider {
-    func placeholder(in context: Context) -> CameraWidgetEntry {
+    func placeholder(in _: Context) -> CameraWidgetEntry {
         CameraWidgetEntry(date: .now, state: .loading)
     }
 
@@ -40,7 +40,7 @@ struct CameraWidgetProvider: TimelineProvider {
         }
     }
 
-    func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<CameraWidgetEntry>) -> Void) {
+    func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<CameraWidgetEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = CameraWidgetEntry(date: .now, state: .notConfigured)
             let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))

@@ -6,11 +6,11 @@ import WidgetKit
 
 struct DashboardView: View {
     @AppStorage("printerIP", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var printerIP: String = ""
+    private var printerIP = ""
     @AppStorage("printerAccessCode", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var accessCode: String = ""
+    private var accessCode = ""
     @AppStorage("printerType", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var printerTypeRaw: String = "auto"
+    private var printerTypeRaw = "auto"
     @Environment(\.scenePhase) private var scenePhase
     @Bindable var viewModel: DashboardViewModel
     @State private var isFullscreen = false
@@ -117,7 +117,6 @@ struct DashboardView: View {
                 if viewModel.isPrinting {
                     SpeedControlSection(viewModel: viewModel)
                 }
-
             }
             .padding()
         }
@@ -135,7 +134,7 @@ struct DashboardView: View {
         }
         .alert("Stop Drying", isPresented: $viewModel.showStopDryingConfirmation) {
             Button("Stop", role: .destructive) { viewModel.stopDrying() }
-            Button("Cancel", role: .cancel) { }
+            Button("Cancel", role: .cancel) {}
         } message: {
             Text("Are you sure you want to stop the drying cycle?")
         }

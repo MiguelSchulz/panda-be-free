@@ -5,15 +5,15 @@ import SwiftUI
 
 struct CameraStreamView: View {
     @AppStorage("printerIP", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var printerIP: String = ""
+    private var printerIP = ""
     @AppStorage("printerAccessCode", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var accessCode: String = ""
+    private var accessCode = ""
     @AppStorage("printerType", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var printerTypeRaw: String = "auto"
+    private var printerTypeRaw = "auto"
     @Environment(\.scenePhase) private var scenePhase
     @State private var manager = CameraStreamManager()
-    @State private var editingIP: String = ""
-    @State private var editingAccessCode: String = ""
+    @State private var editingIP = ""
+    @State private var editingAccessCode = ""
     @State private var wasStreaming = false
     @State private var isFullscreen = false
 
@@ -43,13 +43,13 @@ struct CameraStreamView: View {
                 case .streaming:
                     streamingView
 
-                case .error(let message):
+                case let .error(message):
                     errorView(message: message)
                 }
             }
             .navigationTitle("Camera")
             .task {
-                if hasConfig && manager.connectionState == .disconnected {
+                if hasConfig, manager.connectionState == .disconnected {
                     manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
                 }
             }
@@ -60,7 +60,7 @@ struct CameraStreamView: View {
                 }
             }
             .onAppear {
-                if wasStreaming && hasConfig {
+                if wasStreaming, hasConfig {
                     wasStreaming = false
                     manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
                 }
@@ -73,7 +73,7 @@ struct CameraStreamView: View {
                         manager.disconnect()
                     }
                 case .active:
-                    if wasStreaming && hasConfig {
+                    if wasStreaming, hasConfig {
                         wasStreaming = false
                         manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
                     }

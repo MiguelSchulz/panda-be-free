@@ -24,16 +24,16 @@ final class DashboardViewModel {
     var showFilamentEditSheet = false
     var editingAmsId: Int?
     var editingTrayId: Int?
-    var editFilamentPreset: FilamentPreset = FilamentPreset.all[0]
+    var editFilamentPreset = FilamentPreset.all[0]
     var editFilamentColor: Color = .white
 
     // AMS Drying
     var showDryingSheet = false
     var dryingAmsId: Int?
     var dryingPreset: PrinterCommand.DryingPreset = .pla
-    var dryingTemperature: Int = 55
-    var dryingDurationMinutes: Int = 480
-    var dryingRotateTray: Bool = false
+    var dryingTemperature = 55
+    var dryingDurationMinutes = 480
+    var dryingRotateTray = false
     var showStopDryingConfirmation = false
     var stoppingDryingAmsId: Int?
 
@@ -46,14 +46,16 @@ final class DashboardViewModel {
     private var nozzleTempCommandTime: Date?
     private var bedTempCommandTime: Date?
     private var fanCommandTimes: [Int: Date] = [:]
-    private var commandedNozzleTarget: Int = 0
-    private var commandedBedTarget: Int = 0
+    private var commandedNozzleTarget = 0
+    private var commandedBedTarget = 0
     private var commandedFanSpeeds: [Int: Int] = [:]
     private var dryingCommandTime: Date?
     private var commandedDryingState: [Int: Int] = [:] // amsId -> dryTimeRemaining
     private var lastWidgetReload: Date?
 
-    var mqttServiceRef: any MQTTServiceProtocol { mqttService }
+    var mqttServiceRef: any MQTTServiceProtocol {
+        mqttService
+    }
 
     var contentState: PrinterAttributes.ContentState {
         printerState.contentState
@@ -111,11 +113,13 @@ final class DashboardViewModel {
                 }
                 // Suppress snapback for manually-set temperatures
                 if payload.nozzleTargetTemper != nil,
-                   let t = self.nozzleTempCommandTime, Date().timeIntervalSince(t) < 3 {
+                   let t = self.nozzleTempCommandTime, Date().timeIntervalSince(t) < 3
+                {
                     self.printerState.nozzleTargetTemp = self.commandedNozzleTarget
                 }
                 if payload.bedTargetTemper != nil,
-                   let t = self.bedTempCommandTime, Date().timeIntervalSince(t) < 3 {
+                   let t = self.bedTempCommandTime, Date().timeIntervalSince(t) < 3
+                {
                     self.printerState.bedTargetTemp = self.commandedBedTarget
                 }
                 // Suppress snapback for manually-set fan speeds
@@ -131,7 +135,8 @@ final class DashboardViewModel {
                 }
                 // Suppress snapback for AMS drying commands
                 if payload.amsUnits != nil,
-                   let t = self.dryingCommandTime, Date().timeIntervalSince(t) < 5 {
+                   let t = self.dryingCommandTime, Date().timeIntervalSince(t) < 5
+                {
                     for (amsId, dryTime) in self.commandedDryingState {
                         if let unit = self.printerState.amsUnits.first(where: { $0.id == amsId }) {
                             unit.dryTimeRemaining = dryTime
@@ -286,7 +291,8 @@ final class DashboardViewModel {
         if let idx = tray.trayInfoIdx, let preset = FilamentPreset.find(byId: idx) {
             editFilamentPreset = preset
         } else if let type = tray.materialType,
-                  let preset = FilamentPreset.all.first(where: { $0.trayType == type }) {
+                  let preset = FilamentPreset.all.first(where: { $0.trayType == type })
+        {
             editFilamentPreset = preset
         } else {
             editFilamentPreset = FilamentPreset.all[0]
@@ -320,7 +326,8 @@ final class DashboardViewModel {
         // Auto-detect preset from first non-empty tray material
         if let unit = printerState.amsUnits.first(where: { $0.id == amsId }),
            let material = unit.trays.first(where: { !$0.isEmpty })?.materialType,
-           let preset = PrinterCommand.DryingPreset(rawValue: material) {
+           let preset = PrinterCommand.DryingPreset(rawValue: material)
+        {
             dryingPreset = preset
             dryingTemperature = min(preset.temperature, maxTemp)
             dryingDurationMinutes = preset.durationMinutes

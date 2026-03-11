@@ -156,24 +156,24 @@ private class DelegateHandler: CocoaMQTTDelegate {
         }
     }
 
-    func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {}
-    func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {}
+    func mqtt(_: CocoaMQTT, didPublishMessage _: CocoaMQTTMessage, id _: UInt16) {}
+    func mqtt(_: CocoaMQTT, didPublishAck _: UInt16) {}
 
-    func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
+    func mqtt(_: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id _: UInt16) {
         guard let data = message.string?.data(using: .utf8) else { return }
         onMessage?(message.topic, data)
     }
 
-    func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
+    func mqtt(_: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
         print("[MQTT] Subscribed — success: \(success), failed: \(failed)")
     }
 
-    func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {}
+    func mqtt(_: CocoaMQTT, didUnsubscribeTopics _: [String]) {}
 
-    func mqttDidPing(_ mqtt: CocoaMQTT) {}
-    func mqttDidReceivePong(_ mqtt: CocoaMQTT) {}
+    func mqttDidPing(_: CocoaMQTT) {}
+    func mqttDidReceivePong(_: CocoaMQTT) {}
 
-    func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: (any Error)?) {
+    func mqttDidDisconnect(_: CocoaMQTT, withError err: (any Error)?) {
         print("[MQTT] mqttDidDisconnect, error: \(err?.localizedDescription ?? "none")")
         if let err {
             let message = err.localizedDescription

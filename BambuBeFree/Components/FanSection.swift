@@ -53,7 +53,8 @@ struct FanSection: View {
         .padding()
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .alert("Change Air Duct Mode",
-               isPresented: $viewModel.showAirductModeConfirmation) {
+               isPresented: $viewModel.showAirductModeConfirmation)
+        {
             Button("Switch", role: .destructive) {
                 viewModel.confirmAirductModeChange()
             }

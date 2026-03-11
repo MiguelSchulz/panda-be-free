@@ -4,9 +4,9 @@ import Foundation
 @MainActor
 @Observable
 public final class OnboardingViewModel {
-    public var ip: String = ""
-    public var accessCode: String = ""
-    public var printerTypeRaw: String = "auto"
+    public var ip = ""
+    public var accessCode = ""
+    public var printerTypeRaw = "auto"
     public var isTesting = false
     public var connectionError: String?
 

@@ -23,7 +23,7 @@ public struct ConnectionBanner: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-        case .error(let message):
+        case let .error(message):
             HStack(spacing: 8) {
                 Image(systemSymbol: .exclamationmarkTriangleFill)
                     .foregroundColor(.red)

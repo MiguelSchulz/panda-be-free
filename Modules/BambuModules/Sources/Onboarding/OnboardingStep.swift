@@ -8,9 +8,13 @@ public enum OnboardingStep: Int, CaseIterable, Sendable {
     case enterCredentials
     case slicerSetup
 
-    public var stepNumber: Int { rawValue + 1 }
+    public var stepNumber: Int {
+        rawValue + 1
+    }
 
-    public static var totalSteps: Int { allCases.count }
+    public static var totalSteps: Int {
+        allCases.count
+    }
 
     public var title: LocalizedStringResource {
         switch self {

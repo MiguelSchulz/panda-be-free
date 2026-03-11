@@ -21,7 +21,7 @@ enum PrintStateWidgetState: Sendable {
 // MARK: - Timeline Provider
 
 struct PrintStateWidgetProvider: TimelineProvider {
-    func placeholder(in context: Context) -> PrintStateWidgetEntry {
+    func placeholder(in _: Context) -> PrintStateWidgetEntry {
         PrintStateWidgetEntry(date: .now, state: .loading)
     }
 
@@ -39,7 +39,7 @@ struct PrintStateWidgetProvider: TimelineProvider {
         }
     }
 
-    func getTimeline(in context: Context, completion: @escaping @Sendable (Timeline<PrintStateWidgetEntry>) -> Void) {
+    func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<PrintStateWidgetEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = PrintStateWidgetEntry(date: .now, state: .notConfigured)
             let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))

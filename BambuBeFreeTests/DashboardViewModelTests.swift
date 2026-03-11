@@ -1,13 +1,12 @@
+@testable import BambuBeFree
 import BambuModels
 import Foundation
 import Networking
 import Testing
-@testable import BambuBeFree
 
 @Suite("Dashboard ViewModel")
 @MainActor
 struct DashboardViewModelTests {
-
     // MARK: - Computed Properties
 
     @Test("isConnected reflects mqttConnectionState")

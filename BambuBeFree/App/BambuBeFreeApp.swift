@@ -16,9 +16,9 @@ enum RootTab: Hashable {
 struct BambuBeFreeApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @AppStorage("printerIP", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var printerIP: String = ""
+    private var printerIP = ""
     @AppStorage("printerAccessCode", store: UserDefaults(suiteName: SharedSettings.suiteName))
-    private var accessCode: String = ""
+    private var accessCode = ""
     @State private var selectedTab: RootTab = .dashboard
     @State private var dashboardViewModel = DashboardViewModel()
 

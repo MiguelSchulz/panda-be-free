@@ -1,9 +1,8 @@
 import BambuModels
 import Foundation
 import Networking
-import Testing
-
 @testable import PrinterControl
+import Testing
 
 // MARK: - Test Case Types
 
@@ -12,7 +11,9 @@ struct JogCase: CustomStringConvertible, Sendable {
     let distance: Double
     let expectedMove: String
 
-    var description: String { "\(axis) \(distance > 0 ? "+" : "")\(Int(distance))mm" }
+    var description: String {
+        "\(axis) \(distance > 0 ? "+" : "")\(Int(distance))mm"
+    }
 }
 
 // MARK: - Tests
@@ -20,7 +21,6 @@ struct JogCase: CustomStringConvertible, Sendable {
 @Suite("Control ViewModel")
 @MainActor
 struct ControlViewModelTests {
-
     // MARK: - XY Jog
 
     nonisolated static let xyJogCases: [JogCase] = [

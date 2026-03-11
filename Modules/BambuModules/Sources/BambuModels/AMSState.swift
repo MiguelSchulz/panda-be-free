@@ -3,9 +3,9 @@ import SwiftUI
 
 /// AMS hardware type, detected from `hw_ver` in MQTT data.
 public enum AMSType {
-    case standard  // AMS08 — original AMS / AMS Lite
-    case pro       // N3F05 — AMS 2 Pro
-    case ht        // N3S05 — AMS HT (high temperature)
+    case standard // AMS08 — original AMS / AMS Lite
+    case pro // N3F05 — AMS 2 Pro
+    case ht // N3S05 — AMS HT (high temperature)
 
     public var maxDryingTemp: Int {
         switch self {
@@ -37,7 +37,7 @@ public struct AMSTray: Identifiable {
     public var color: Color? // Parsed from RRGGBBAA hex. nil = empty
     public var colorHex: String? // Raw hex for storage
     public var remainPercent: Int? // 0-100, nil if unknown or empty
-    public var isBambuFilament: Bool = false
+    public var isBambuFilament = false
     public var nozzleTempMin: Int?
     public var nozzleTempMax: Int?
     public var recommendedDryTemp: Int? // from spool RFID
@@ -45,7 +45,9 @@ public struct AMSTray: Identifiable {
     public var traySubBrands: String? // e.g. "PLA Matte"
     public var trayInfoIdx: String? // filament profile identifier
 
-    public var isEmpty: Bool { materialType == nil }
+    public var isEmpty: Bool {
+        materialType == nil
+    }
 
     /// Global tray index across all AMS units (amsId * 4 + id)
     public func globalIndex(amsId: Int) -> Int {
@@ -68,7 +70,8 @@ public struct AMSTray: Identifiable {
                 isBambuFilament: Bool = false, nozzleTempMin: Int? = nil,
                 nozzleTempMax: Int? = nil, recommendedDryTemp: Int? = nil,
                 recommendedDryTime: Int? = nil, traySubBrands: String? = nil,
-                trayInfoIdx: String? = nil) {
+                trayInfoIdx: String? = nil)
+    {
         self.id = id
         self.materialType = materialType
         self.color = color
@@ -89,17 +92,19 @@ public struct AMSTray: Identifiable {
 public final class AMSUnit: Identifiable {
     public let id: Int // 0-3
     public var hwVersion: String?
-    public var humidityLevel: Int = 0 // 1-5
-    public var humidityRaw: Int = 0 // 0-100%
+    public var humidityLevel = 0 // 1-5
+    public var humidityRaw = 0 // 0-100%
     public var temperature: Double = 0 // Celsius
-    public var dryTimeRemaining: Int = 0 // seconds, 0 = not drying
+    public var dryTimeRemaining = 0 // seconds, 0 = not drying
     public var trays: [AMSTray] = (0...3).map { AMSTray(id: $0) }
 
     public var amsType: AMSType? {
         hwVersion.map { AMSType.from(hwVersion: $0) }
     }
 
-    public var isDrying: Bool { dryTimeRemaining > 0 }
+    public var isDrying: Bool {
+        dryTimeRemaining > 0
+    }
 
     public var dryTimeFormatted: String {
         let hours = dryTimeRemaining / 3600
@@ -115,9 +120,9 @@ public final class AMSUnit: Identifiable {
     }
 }
 
-extension Color {
+public extension Color {
     /// Convert to RRGGBBAA hex string for Bambu MQTT commands.
-    public var hexRRGGBBAA: String {
+    var hexRRGGBBAA: String {
         let uiColor = UIColor(self)
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         uiColor.getRed(&r, green: &g, blue: &b, alpha: &a)

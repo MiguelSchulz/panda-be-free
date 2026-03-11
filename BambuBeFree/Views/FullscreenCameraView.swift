@@ -5,8 +5,8 @@ import SwiftUI
 struct FullscreenCameraView: View {
     let cameraProvider: any CameraStreamProviding
     @Binding var isPresented: Bool
-    var isLightOn: Bool = false
-    var onToggleLight: ((Bool) -> Void)? = nil
+    var isLightOn = false
+    var onToggleLight: ((Bool) -> Void)?
 
     var body: some View {
         ZStack {

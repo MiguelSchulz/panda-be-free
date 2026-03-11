@@ -4,9 +4,9 @@ import CoreMedia
 import CryptoKit
 import Foundation
 import Network
+import os
 import UIKit
 import VideoToolbox
-import os
 
 enum CameraConnectionState: Equatable {
     case disconnected
@@ -18,7 +18,10 @@ enum CameraConnectionState: Equatable {
 @MainActor
 @Observable
 final class CameraStreamManager: CameraStreamProviding {
-    var isStreaming: Bool { connectionState == .streaming }
+    var isStreaming: Bool {
+        connectionState == .streaming
+    }
+
     private let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "com.bambubefree.app", category: "CameraStream")
 
     var connectionState: CameraConnectionState = .disconnected
@@ -174,7 +177,7 @@ final class CameraStreamManager: CameraStreamProviding {
             streamTask = Task { [weak self] in
                 await self?.performTCPStreaming(ip: ip, accessCode: accessCode, connection: conn)
             }
-        case .failed(let error):
+        case let .failed(error):
             logger.error("TCP connection failed: \(error.localizedDescription)")
             connectionState = .error(String(localized: "Connection failed: \(error.localizedDescription)"))
         case .waiting:
@@ -184,15 +187,19 @@ final class CameraStreamManager: CameraStreamProviding {
         }
     }
 
-    private nonisolated func performTCPStreaming(ip: String, accessCode: String, connection: NWConnection) async {
+    private nonisolated func performTCPStreaming(ip _: String, accessCode: String, connection: NWConnection) async {
         // Build 80-byte auth packet
         var authPacket = Data(count: 80)
         authPacket[0] = 0x40; authPacket[1] = 0x00; authPacket[2] = 0x00; authPacket[3] = 0x00
         authPacket[4] = 0x00; authPacket[5] = 0x30; authPacket[6] = 0x00; authPacket[7] = 0x00
         let usernameBytes = Array("bblp".utf8)
-        for (i, byte) in usernameBytes.enumerated() { authPacket[16 + i] = byte }
+        for (i, byte) in usernameBytes.enumerated() {
+            authPacket[16 + i] = byte
+        }
         let passwordBytes = Array(accessCode.utf8)
-        for (i, byte) in passwordBytes.prefix(32).enumerated() { authPacket[48 + i] = byte }
+        for (i, byte) in passwordBytes.prefix(32).enumerated() {
+            authPacket[48 + i] = byte
+        }
 
         do {
             // Send auth
@@ -298,7 +305,7 @@ final class CameraStreamManager: CameraStreamProviding {
             streamTask = Task { [weak self] in
                 await self?.performRTSPStreaming(ip: ip, accessCode: accessCode, connection: conn)
             }
-        case .failed(let error):
+        case let .failed(error):
             logger.error("Connection failed: \(error.localizedDescription)")
             connectionState = .error(String(localized: "Connection failed: \(error.localizedDescription)"))
         case .waiting:
@@ -485,24 +492,32 @@ final class CameraStreamManager: CameraStreamProviding {
         }
 
         func readExactly(_ count: Int) async throws -> Data {
-            while readBuffer.count < count { try await fillBuffer() }
+            while readBuffer.count < count {
+                try await fillBuffer()
+            }
             let result = Data(readBuffer.prefix(count))
             readBuffer.removeFirst(count)
             return result
         }
 
-        // Read RTSP text response, skipping any interleaved $ frames or stray CR/LF
+        /// Read RTSP text response, skipping any interleaved $ frames or stray CR/LF
         func readRTSPResponseHeader() async throws -> Data {
             // Skip interleaved data before the RTSP text response
             while true {
-                while readBuffer.isEmpty { try await fillBuffer() }
+                while readBuffer.isEmpty {
+                    try await fillBuffer()
+                }
                 let first = readBuffer[readBuffer.startIndex]
                 if first == 0x24 { // '$' interleaved frame
-                    while readBuffer.count < 4 { try await fillBuffer() }
+                    while readBuffer.count < 4 {
+                        try await fillBuffer()
+                    }
                     let len = Int(UInt16(readBuffer[readBuffer.startIndex + 2]) << 8
                                 | UInt16(readBuffer[readBuffer.startIndex + 3]))
                     let total = 4 + len
-                    while readBuffer.count < total { try await fillBuffer() }
+                    while readBuffer.count < total {
+                        try await fillBuffer()
+                    }
                     readBuffer.removeFirst(total)
                 } else if first == 0x0D || first == 0x0A {
                     readBuffer.removeFirst(1)
@@ -717,7 +732,9 @@ final class CameraStreamManager: CameraStreamProviding {
             while !Task.isCancelled {
                 // Skip non-interleaved data to find next $ marker
                 while true {
-                    while readBuffer.isEmpty { try await fillBuffer() }
+                    while readBuffer.isEmpty {
+                        try await fillBuffer()
+                    }
                     if readBuffer[readBuffer.startIndex] == 0x24 { break }
                     readBuffer.removeFirst(1)
                 }
@@ -786,7 +803,7 @@ private struct H264NALAssembler {
     private var fuNRI: UInt8 = 0
     private var fuNALType: UInt8 = 0
 
-    mutating func processRTPPayload(_ payload: Data, markerBit: Bool) -> [Data] {
+    mutating func processRTPPayload(_ payload: Data, markerBit _: Bool) -> [Data] {
         guard !payload.isEmpty else { return [] }
 
         let firstByte = payload[payload.startIndex]

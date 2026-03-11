@@ -16,7 +16,8 @@ public struct TemperatureGauge: View {
     @FocusState private var isFocused: Bool
 
     public init(label: LocalizedStringResource, icon: SFSymbol, current: Int, target: Int?,
-                range: ClosedRange<Int>?, editable: Bool, onValueSet: @escaping (Int) -> Void) {
+                range: ClosedRange<Int>?, editable: Bool, onValueSet: @escaping (Int) -> Void)
+    {
         self.label = label
         self.icon = icon
         self.current = current
@@ -74,7 +75,7 @@ public struct TemperatureGauge: View {
             isFocused = true
         }
         .onChange(of: isFocused) { _, focused in
-            if !focused && isEditing {
+            if !focused, isEditing {
                 submitValue()
             }
         }

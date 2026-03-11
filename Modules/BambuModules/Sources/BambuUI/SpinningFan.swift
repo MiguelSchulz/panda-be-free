@@ -36,7 +36,7 @@ public struct SpinningFan: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .onChange(of: targetRate, initial: true) { oldRate, newRate in
+        .onChange(of: targetRate, initial: true) { _, newRate in
             // Preserve current angle, then continue at new speed
             let now = Date.now
             let elapsed = now.timeIntervalSince(baseTime)

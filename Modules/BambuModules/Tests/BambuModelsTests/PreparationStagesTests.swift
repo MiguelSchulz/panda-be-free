@@ -1,17 +1,16 @@
-import Testing
 @testable import BambuModels
+import Testing
 
 @Suite("Preparation Stages")
 struct PreparationStagesTests {
-
     // MARK: - Name Lookup
 
     @Test("Known stage returns name",
           arguments: [
-            (1, "Auto bed leveling"),
-            (7, "Heating hotend"),
-            (35, "Paused: nozzle clog"),
-            (77, "Preparing AMS"),
+              (1, "Auto bed leveling"),
+              (7, "Heating hotend"),
+              (35, "Paused: nozzle clog"),
+              (77, "Preparing AMS"),
           ])
     func knownStageName(stgCur: Int, expected: String) {
         #expect(PreparationStages.name(for: stgCur) == expected)

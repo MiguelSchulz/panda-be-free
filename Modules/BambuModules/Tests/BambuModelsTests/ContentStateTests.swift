@@ -1,11 +1,10 @@
-import SFSafeSymbols
-import Testing
-import SwiftUI
 @testable import BambuModels
+import SFSafeSymbols
+import SwiftUI
+import Testing
 
 @Suite("ContentState Computed Properties")
 struct ContentStateTests {
-
     // MARK: - formattedTime
 
     @Test("formattedTime with 0 minutes")
@@ -69,35 +68,35 @@ struct ContentStateTests {
     }
 
     @Test("temperatureInfo includes target when > 0")
-    func temperatureInfoWithTarget() {
+    func temperatureInfoWithTarget() throws {
         let state = makeState(nozzleTemp: 200, bedTemp: 55, nozzleTargetTemp: 220, bedTargetTemp: 60)
         let info = state.temperatureInfo.map { String(localized: $0) }
         #expect(info != nil)
-        #expect(info!.contains("200/220°C"))
-        #expect(info!.contains("55/60°C"))
+        #expect(try #require(info?.contains("200/220°C")))
+        #expect(try #require(info?.contains("55/60°C")))
     }
 
     @Test("temperatureInfo includes chamber when > 0")
-    func temperatureInfoChamber() {
+    func temperatureInfoChamber() throws {
         let state = makeState(nozzleTemp: 200, bedTemp: 55, chamberTemp: 38)
         let info = state.temperatureInfo.map { String(localized: $0) }
         #expect(info != nil)
-        #expect(info!.contains("Chamber 38°C"))
+        #expect(try #require(info?.contains("Chamber 38°C")))
     }
 
     // MARK: - stateLabel
 
     @Test("stateLabel maps statuses correctly",
           arguments: [
-            (PrinterStatus.printing, nil as String?, "Printing"),
-            (.completed, nil, "Complete"),
-            (.cancelled, nil, "Cancelled"),
-            (.idle, nil, "Idle"),
-            (.issue, nil, "Issue"),
-            (.preparing, nil, "Preparing"),
-            (.preparing, "calibrate", "Calibrating"),
-            (.paused, nil, "Paused"),
-            (.paused, "filament", "Filament"),
+              (PrinterStatus.printing, nil as String?, "Printing"),
+              (.completed, nil, "Complete"),
+              (.cancelled, nil, "Cancelled"),
+              (.idle, nil, "Idle"),
+              (.issue, nil, "Issue"),
+              (.preparing, nil, "Preparing"),
+              (.preparing, "calibrate", "Calibrating"),
+              (.paused, nil, "Paused"),
+              (.paused, "filament", "Filament"),
           ])
     func stateLabel(status: PrinterStatus, category: String?, expected: String) {
         let state = makeState(status: status, stageCategory: category)
@@ -126,11 +125,11 @@ struct ContentStateTests {
 
     @Test("iconName returns correct symbols",
           arguments: [
-            (PrinterStatus.completed, SFSymbol.checkmarkCircleFill),
-            (.cancelled, .xmarkCircleFill),
-            (.paused, .pauseCircleFill),
-            (.issue, .exclamationmarkTriangleFill),
-            (.printing, .printerFill),
+              (PrinterStatus.completed, SFSymbol.checkmarkCircleFill),
+              (.cancelled, .xmarkCircleFill),
+              (.paused, .pauseCircleFill),
+              (.issue, .exclamationmarkTriangleFill),
+              (.printing, .printerFill),
           ])
     func iconName(status: PrinterStatus, expected: SFSymbol) {
         let state = makeState(status: status)
@@ -139,10 +138,10 @@ struct ContentStateTests {
 
     @Test("trailingText returns correct text",
           arguments: [
-            (PrinterStatus.completed, "Done"),
-            (.cancelled, "Stop"),
-            (.preparing, "..."),
-            (.issue, "!"),
+              (PrinterStatus.completed, "Done"),
+              (.cancelled, "Stop"),
+              (.preparing, "..."),
+              (.issue, "!"),
           ])
     func trailingText(status: PrinterStatus, expected: String) {
         let state = makeState(status: status)

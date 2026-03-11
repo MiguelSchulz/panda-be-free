@@ -3,9 +3,9 @@ import CoreMedia
 import CryptoKit
 import Foundation
 import Network
+import os
 import UIKit
 import VideoToolbox
-import os
 
 public enum CameraSnapshotError: Error, LocalizedError {
     case noConfiguration
@@ -18,7 +18,7 @@ public enum CameraSnapshotError: Error, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .noConfiguration: "No printer configured"
-        case .connectionFailed(let msg): "Connection failed: \(msg)"
+        case let .connectionFailed(msg): "Connection failed: \(msg)"
         case .authenticationFailed: "Authentication failed"
         case .timeout: "Connection timed out"
         case .noFrameReceived: "No frame received"
@@ -73,10 +73,14 @@ public enum CameraSnapshotService {
         // Offset 8-15: zeros (already zeroed)
         // Offset 16-47: username "bblp" null-padded to 32 bytes
         let usernameBytes = Array("bblp".utf8)
-        for (i, byte) in usernameBytes.enumerated() { authPacket[16 + i] = byte }
+        for (i, byte) in usernameBytes.enumerated() {
+            authPacket[16 + i] = byte
+        }
         // Offset 48-79: password null-padded to 32 bytes
         let passwordBytes = Array(accessCode.utf8)
-        for (i, byte) in passwordBytes.prefix(32).enumerated() { authPacket[48 + i] = byte }
+        for (i, byte) in passwordBytes.prefix(32).enumerated() {
+            authPacket[48 + i] = byte
+        }
 
         try await send(connection: connection, data: authPacket)
 
@@ -130,7 +134,9 @@ public enum CameraSnapshotService {
         }
 
         func readExactly(_ count: Int) async throws -> Data {
-            while readBuffer.count < count { try await fillBuffer() }
+            while readBuffer.count < count {
+                try await fillBuffer()
+            }
             let result = Data(readBuffer.prefix(count))
             readBuffer.removeFirst(count)
             return result
@@ -138,14 +144,20 @@ public enum CameraSnapshotService {
 
         func readRTSPResponseHeader() async throws -> Data {
             while true {
-                while readBuffer.isEmpty { try await fillBuffer() }
+                while readBuffer.isEmpty {
+                    try await fillBuffer()
+                }
                 let first = readBuffer[readBuffer.startIndex]
                 if first == 0x24 {
-                    while readBuffer.count < 4 { try await fillBuffer() }
+                    while readBuffer.count < 4 {
+                        try await fillBuffer()
+                    }
                     let len = Int(UInt16(readBuffer[readBuffer.startIndex + 2]) << 8
                         | UInt16(readBuffer[readBuffer.startIndex + 3]))
                     let total = 4 + len
-                    while readBuffer.count < total { try await fillBuffer() }
+                    while readBuffer.count < total {
+                        try await fillBuffer()
+                    }
                     readBuffer.removeFirst(total)
                 } else if first == 0x0D || first == 0x0A {
                     readBuffer.removeFirst(1)
@@ -383,7 +395,7 @@ public enum CameraSnapshotService {
             configureDecoder(sps: sps, pps: pps)
         }
 
-        // Decode a single NAL unit and return JPEG data if it's a video slice
+        /// Decode a single NAL unit and return JPEG data if it's a video slice
         func decodeNAL(_ nalData: Data) -> Data? {
             guard !nalData.isEmpty else { return nil }
             let nalType = nalData[nalData.startIndex] & 0x1F
@@ -397,7 +409,7 @@ public enum CameraSnapshotService {
                 return nil
             }
 
-            guard (nalType == 1 || nalType == 5),
+            guard nalType == 1 || nalType == 5,
                   let session = decompressionSession,
                   let fmtDesc = formatDescription else { return nil }
 
@@ -456,7 +468,9 @@ public enum CameraSnapshotService {
         while Date() < deadline {
             // Find next interleaved frame marker
             while true {
-                while readBuffer.isEmpty { try await fillBuffer() }
+                while readBuffer.isEmpty {
+                    try await fillBuffer()
+                }
                 if readBuffer[readBuffer.startIndex] == 0x24 { break }
                 readBuffer.removeFirst(1)
             }
@@ -522,7 +536,7 @@ public enum CameraSnapshotService {
                 switch state {
                 case .ready:
                     cont.resume(returning: connection)
-                case .failed(let error):
+                case let .failed(error):
                     cont.resume(throwing: CameraSnapshotError.connectionFailed(error.localizedDescription))
                 case .waiting:
                     connection.cancel()
@@ -608,7 +622,7 @@ private struct SnapshotNALAssembler {
     private var fuNRI: UInt8 = 0
     private var fuNALType: UInt8 = 0
 
-    mutating func processRTPPayload(_ payload: Data, markerBit: Bool) -> [Data] {
+    mutating func processRTPPayload(_ payload: Data, markerBit _: Bool) -> [Data] {
         guard !payload.isEmpty else { return [] }
 
         let firstByte = payload[payload.startIndex]

@@ -1,9 +1,8 @@
-import Testing
 @testable import Onboarding
+import Testing
 
 @Suite("Onboarding Steps")
 struct OnboardingStepTests {
-
     @Test("Total steps count")
     func totalSteps() {
         #expect(OnboardingStep.totalSteps == 5)
@@ -11,11 +10,11 @@ struct OnboardingStepTests {
 
     @Test("Step numbers are 1-based",
           arguments: [
-            (OnboardingStep.lanMode, 1),
-            (OnboardingStep.devMode, 2),
-            (OnboardingStep.credentials, 3),
-            (OnboardingStep.enterCredentials, 4),
-            (OnboardingStep.slicerSetup, 5),
+              (OnboardingStep.lanMode, 1),
+              (OnboardingStep.devMode, 2),
+              (OnboardingStep.credentials, 3),
+              (OnboardingStep.enterCredentials, 4),
+              (OnboardingStep.slicerSetup, 5),
           ])
     func stepNumbers(step: OnboardingStep, expected: Int) {
         #expect(step.stepNumber == expected)
@@ -54,10 +53,10 @@ struct OnboardingStepTests {
 
     @Test("Wiki URLs are set for informational steps",
           arguments: [
-            OnboardingStep.lanMode,
-            OnboardingStep.devMode,
-            OnboardingStep.credentials,
-            OnboardingStep.slicerSetup,
+              OnboardingStep.lanMode,
+              OnboardingStep.devMode,
+              OnboardingStep.credentials,
+              OnboardingStep.slicerSetup,
           ])
     func wikiURLsExist(step: OnboardingStep) {
         #expect(step.wikiURL != nil)

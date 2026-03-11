@@ -6,7 +6,8 @@ struct DryingSheet: View {
 
     private var maxTemp: Int {
         guard let amsId = viewModel.dryingAmsId,
-              let unit = viewModel.printerState.amsUnits.first(where: { $0.id == amsId }) else {
+              let unit = viewModel.printerState.amsUnits.first(where: { $0.id == amsId })
+        else {
             return 85
         }
         return unit.amsType?.maxDryingTemp ?? 85

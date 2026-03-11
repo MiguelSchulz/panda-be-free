@@ -14,7 +14,7 @@ public enum WidgetMQTTService {
         public var errorDescription: String? {
             switch self {
             case .notConfigured: "Printer not configured"
-            case .connectionFailed(let msg): "Connection failed: \(msg)"
+            case let .connectionFailed(msg): "Connection failed: \(msg)"
             case .timeout: "Connection timed out"
             case .noData: "No data received"
             }
@@ -26,7 +26,7 @@ public enum WidgetMQTTService {
     /// local inside withCheckedThrowingContinuation) would be freed as soon
     /// as the closure returns, niling out CocoaMQTT's weak delegate and
     /// causing the continuation to never resume.
-    nonisolated(unsafe) fileprivate static var activeSession: AnyObject?
+    fileprivate nonisolated(unsafe) static var activeSession: AnyObject?
 
     /// Fetch the current printer state via a one-shot MQTT connection.
     /// Returns a snapshot suitable for caching and widget display.
@@ -197,20 +197,20 @@ private class SessionDelegate: CocoaMQTTDelegate {
         }
     }
 
-    func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {}
-    func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {}
+    func mqtt(_: CocoaMQTT, didPublishMessage _: CocoaMQTTMessage, id _: UInt16) {}
+    func mqtt(_: CocoaMQTT, didPublishAck _: UInt16) {}
 
-    func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16) {
+    func mqtt(_: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id _: UInt16) {
         guard let data = message.string?.data(using: .utf8) else { return }
         onMessage?(message.topic, data)
     }
 
-    func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {}
-    func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopics topics: [String]) {}
-    func mqttDidPing(_ mqtt: CocoaMQTT) {}
-    func mqttDidReceivePong(_ mqtt: CocoaMQTT) {}
+    func mqtt(_: CocoaMQTT, didSubscribeTopics _: NSDictionary, failed _: [String]) {}
+    func mqtt(_: CocoaMQTT, didUnsubscribeTopics _: [String]) {}
+    func mqttDidPing(_: CocoaMQTT) {}
+    func mqttDidReceivePong(_: CocoaMQTT) {}
 
-    func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: (any Error)?) {
+    func mqttDidDisconnect(_: CocoaMQTT, withError err: (any Error)?) {
         if let err {
             onError?(err.localizedDescription)
         } else {

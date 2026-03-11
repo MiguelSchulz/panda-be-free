@@ -9,13 +9,13 @@ struct AMSWidgetView: View {
 
     var body: some View {
         switch entry.state {
-        case .data(let unit, let activeTrayIndex):
+        case let .data(unit, activeTrayIndex):
             dataView(unit: unit, activeTrayIndex: activeTrayIndex)
         case .noAMS:
             noAMSView
         case .loading:
             loadingView
-        case .error(let message):
+        case let .error(message):
             errorView(message: message)
         case .notConfigured:
             notConfiguredView

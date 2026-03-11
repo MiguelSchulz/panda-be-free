@@ -1,7 +1,7 @@
 import NavigatorUI
 import SwiftUI
 
-nonisolated public enum OnboardingDestinations: NavigationDestination {
+public nonisolated enum OnboardingDestinations: NavigationDestination {
     case directConnect
     case guidedLanMode
     case guidedDevMode

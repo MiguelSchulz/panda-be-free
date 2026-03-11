@@ -28,21 +28,21 @@ public struct PrinterAttributes: Sendable {
 
     /// Dynamic content state for printer display.
     public struct ContentState: Codable, Hashable, Sendable {
-        public var progress: Int              // 0-100
-        public var remainingMinutes: Int      // ETA in minutes
-        public var jobName: String            // print job name (can be empty)
-        public var layerNum: Int              // current layer number
-        public var totalLayers: Int           // total layer count
-        public var status: PrinterStatus      // current printer state
-        public var prepareStage: String?      // stage description (e.g. "Auto bed leveling", "Nozzle clog")
-        public var stageCategory: String?     // "prepare", "calibrate", "paused", "filament", "issue"
-        public var nozzleTemp: Int?           // current nozzle temperature (°C)
-        public var bedTemp: Int?              // current bed temperature (°C)
-        public var nozzleTargetTemp: Int?     // target nozzle temperature (°C)
-        public var bedTargetTemp: Int?        // target bed temperature (°C)
-        public var chamberTemp: Int?          // current chamber temperature (°C)
+        public var progress: Int // 0-100
+        public var remainingMinutes: Int // ETA in minutes
+        public var jobName: String // print job name (can be empty)
+        public var layerNum: Int // current layer number
+        public var totalLayers: Int // total layer count
+        public var status: PrinterStatus // current printer state
+        public var prepareStage: String? // stage description (e.g. "Auto bed leveling", "Nozzle clog")
+        public var stageCategory: String? // "prepare", "calibrate", "paused", "filament", "issue"
+        public var nozzleTemp: Int? // current nozzle temperature (°C)
+        public var bedTemp: Int? // current bed temperature (°C)
+        public var nozzleTargetTemp: Int? // target nozzle temperature (°C)
+        public var bedTargetTemp: Int? // target bed temperature (°C)
+        public var chamberTemp: Int? // current chamber temperature (°C)
 
-        // Map Swift property `status` to JSON key `state` for APNs wire compatibility
+        /// Map Swift property `status` to JSON key `state` for APNs wire compatibility
         enum CodingKeys: String, CodingKey {
             case progress, remainingMinutes, jobName, layerNum, totalLayers
             case status = "state"
@@ -84,8 +84,8 @@ public struct PrinterAttributes: Sendable {
 
 // MARK: - Convenience
 
-extension PrinterAttributes.ContentState {
-    public var formattedTime: LocalizedStringResource {
+public extension PrinterAttributes.ContentState {
+    var formattedTime: LocalizedStringResource {
         guard remainingMinutes > 0 else { return "<1m" }
         let hours = remainingMinutes / 60
         let mins = remainingMinutes % 60
@@ -95,7 +95,7 @@ extension PrinterAttributes.ContentState {
         return "\(mins)m"
     }
 
-    public var formattedTimeRemaining: LocalizedStringResource {
+    var formattedTimeRemaining: LocalizedStringResource {
         guard remainingMinutes > 0 else { return "<1m remaining" }
         let hours = remainingMinutes / 60
         let mins = remainingMinutes % 60
@@ -105,16 +105,16 @@ extension PrinterAttributes.ContentState {
         return "\(mins)m remaining"
     }
 
-    public var layerInfo: String? {
+    var layerInfo: String? {
         guard totalLayers > 0 else { return nil }
         return "\(layerNum)/\(totalLayers)"
     }
 
-    public var displayTitle: String {
+    var displayTitle: String {
         jobName.isEmpty ? String(localized: "3D Print") : jobName
     }
 
-    public var temperatureInfo: LocalizedStringResource? {
+    var temperatureInfo: LocalizedStringResource? {
         guard let nozzle = nozzleTemp, let bed = bedTemp else { return nil }
         let nozzleStr = if let target = nozzleTargetTemp, target > 0 {
             "\(nozzle)/\(target)°C"
@@ -132,24 +132,24 @@ extension PrinterAttributes.ContentState {
         return "Nozzle \(nozzleStr) · Bed \(bedStr)"
     }
 
-    public var stateLabel: LocalizedStringResource {
+    var stateLabel: LocalizedStringResource {
         switch status {
         case .preparing:
             if stageCategory == "calibrate" { return "Calibrating" }
             return "Preparing"
-        case .printing:  return "Printing"
+        case .printing: return "Printing"
         case .paused:
             if stageCategory == "filament" { return "Filament" }
             return "Paused"
-        case .issue:     return "Issue"
+        case .issue: return "Issue"
         case .completed: return "Complete"
         case .cancelled: return "Cancelled"
-        case .idle:      return "Idle"
+        case .idle: return "Idle"
         }
     }
 
     /// Human-readable stage description, shown for preparing/paused/issue states
-    public var prepareStageLabel: String? {
+    var prepareStageLabel: String? {
         guard [.preparing, .paused, .issue].contains(status),
               let stage = prepareStage, !stage.isEmpty else { return nil }
         return stage
@@ -158,29 +158,29 @@ extension PrinterAttributes.ContentState {
 
 // MARK: - UI Helpers
 
-extension PrinterAttributes.ContentState {
-    public var iconName: SFSymbol {
+public extension PrinterAttributes.ContentState {
+    var iconName: SFSymbol {
         switch status {
         case .completed: .checkmarkCircleFill
         case .cancelled: .xmarkCircleFill
-        case .paused:    .pauseCircleFill
-        case .issue:     .exclamationmarkTriangleFill
+        case .paused: .pauseCircleFill
+        case .issue: .exclamationmarkTriangleFill
         case .preparing, .printing, .idle: .printerFill
         }
     }
 
-    public var accentColor: Color {
+    var accentColor: Color {
         switch status {
         case .completed: .green
         case .cancelled: .red
         case .preparing: .orange
-        case .paused:    .yellow
-        case .issue:     .red
+        case .paused: .yellow
+        case .issue: .red
         case .printing, .idle: .blue
         }
     }
 
-    public var compactLeadingTemp: String {
+    var compactLeadingTemp: String {
         if let chamber = chamberTemp, chamber > 0 {
             return "\(chamber)°"
         }
@@ -191,8 +191,8 @@ extension PrinterAttributes.ContentState {
     }
 
     /// Abbreviated temperature lines for compact display: "N 150/220", "B 45/60", "C 28"
-    public struct TempLine: Identifiable, Sendable {
-        public let id: String   // "N", "B", "C"
+    struct TempLine: Identifiable, Sendable {
+        public let id: String // "N", "B", "C"
         public let label: String
         public let text: String
 
@@ -203,7 +203,7 @@ extension PrinterAttributes.ContentState {
         }
     }
 
-    public var compactTemperatureLines: [TempLine] {
+    var compactTemperatureLines: [TempLine] {
         var lines: [TempLine] = []
         if let nozzle = nozzleTemp {
             let text = if let target = nozzleTargetTemp, target > 0 {
@@ -227,13 +227,13 @@ extension PrinterAttributes.ContentState {
         return lines
     }
 
-    public var trailingText: LocalizedStringResource {
+    var trailingText: LocalizedStringResource {
         switch status {
         case .completed: "Done"
         case .cancelled: "Stop"
         case .preparing: "..."
-        case .paused:    "\(progress)%"
-        case .issue:     "!"
+        case .paused: "\(progress)%"
+        case .issue: "!"
         case .printing, .idle: "\(progress)%"
         }
     }
@@ -241,8 +241,8 @@ extension PrinterAttributes.ContentState {
 
 // MARK: - Preview Mock Data
 
-extension PrinterAttributes.ContentState {
-    public static let mockPrinting = PrinterAttributes.ContentState(
+public extension PrinterAttributes.ContentState {
+    static let mockPrinting = PrinterAttributes.ContentState(
         progress: 42,
         remainingMinutes: 83,
         jobName: "Benchy",
@@ -254,7 +254,7 @@ extension PrinterAttributes.ContentState {
         chamberTemp: 38
     )
 
-    public static let mockStarting = PrinterAttributes.ContentState(
+    static let mockStarting = PrinterAttributes.ContentState(
         progress: 0,
         remainingMinutes: 240,
         jobName: "Phone Stand",
@@ -269,7 +269,7 @@ extension PrinterAttributes.ContentState {
         chamberTemp: 28
     )
 
-    public static let mockCompleted = PrinterAttributes.ContentState(
+    static let mockCompleted = PrinterAttributes.ContentState(
         progress: 100,
         remainingMinutes: 0,
         jobName: "Benchy",
@@ -278,7 +278,7 @@ extension PrinterAttributes.ContentState {
         status: .completed
     )
 
-    public static let mockCancelled = PrinterAttributes.ContentState(
+    static let mockCancelled = PrinterAttributes.ContentState(
         progress: 37,
         remainingMinutes: 0,
         jobName: "Phone Case",
@@ -287,7 +287,7 @@ extension PrinterAttributes.ContentState {
         status: .cancelled
     )
 
-    public static let mockPaused = PrinterAttributes.ContentState(
+    static let mockPaused = PrinterAttributes.ContentState(
         progress: 42,
         remainingMinutes: 83,
         jobName: "Benchy",
@@ -301,7 +301,7 @@ extension PrinterAttributes.ContentState {
         chamberTemp: 38
     )
 
-    public static let mockIssue = PrinterAttributes.ContentState(
+    static let mockIssue = PrinterAttributes.ContentState(
         progress: 42,
         remainingMinutes: 83,
         jobName: "Benchy",
@@ -316,6 +316,6 @@ extension PrinterAttributes.ContentState {
     )
 }
 
-extension PrinterAttributes {
-    public static let preview = PrinterAttributes(printerName: "Bambu Lab P1S")
+public extension PrinterAttributes {
+    static let preview = PrinterAttributes(printerName: "Bambu Lab P1S")
 }

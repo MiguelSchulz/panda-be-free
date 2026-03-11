@@ -11,7 +11,7 @@ public enum PrinterCommand {
     case startDrying(amsId: Int, temperature: Int, durationMinutes: Int, rotateTray: Bool)
     case stopDrying(amsId: Int)
     case amsFilamentSetting(amsId: Int, trayId: Int, trayInfoIdx: String, trayType: String,
-                               trayColor: String, nozzleTempMin: Int, nozzleTempMax: Int)
+                            trayColor: String, nozzleTempMin: Int, nozzleTempMax: Int)
     case getVersion
     case pushAll
 
@@ -23,7 +23,9 @@ public enum PrinterCommand {
         case pa = "PA"
         case custom = "Custom"
 
-        public var id: String { rawValue }
+        public var id: String {
+            rawValue
+        }
 
         public var label: LocalizedStringResource {
             switch self {
@@ -65,7 +67,9 @@ public enum PrinterCommand {
         case sport = 3
         case ludicrous = 4
 
-        public var id: Int { rawValue }
+        public var id: Int {
+            rawValue
+        }
 
         public var label: LocalizedStringResource {
             switch self {
@@ -78,19 +82,17 @@ public enum PrinterCommand {
     }
 
     public func payload(sequenceId: String = "0") -> Data {
-        let dict: [String: Any]
-
-        switch self {
+        let dict: [String: Any] = switch self {
         case .pause:
-            dict = ["print": ["sequence_id": sequenceId, "command": "pause", "param": ""]]
+            ["print": ["sequence_id": sequenceId, "command": "pause", "param": ""]]
         case .resume:
-            dict = ["print": ["sequence_id": sequenceId, "command": "resume", "param": ""]]
+            ["print": ["sequence_id": sequenceId, "command": "resume", "param": ""]]
         case .stop:
-            dict = ["print": ["sequence_id": sequenceId, "command": "stop", "param": ""]]
-        case .printSpeed(let level):
-            dict = ["print": ["sequence_id": sequenceId, "command": "print_speed", "param": "\(level.rawValue)"]]
-        case .chamberLight(let on):
-            dict = ["system": [
+            ["print": ["sequence_id": sequenceId, "command": "stop", "param": ""]]
+        case let .printSpeed(level):
+            ["print": ["sequence_id": sequenceId, "command": "print_speed", "param": "\(level.rawValue)"]]
+        case let .chamberLight(on):
+            ["system": [
                 "sequence_id": sequenceId,
                 "command": "ledctrl",
                 "led_node": "chamber_light",
@@ -100,21 +102,21 @@ public enum PrinterCommand {
                 "loop_times": 1,
                 "interval_time": 1000,
             ]]
-        case .airductMode(let mode):
-            dict = ["print": [
+        case let .airductMode(mode):
+            ["print": [
                 "sequence_id": sequenceId,
                 "command": "set_airduct",
                 "modeId": mode,
                 "submode": -1,
             ]]
-        case .gcodeLine(let gcode):
-            dict = ["print": [
+        case let .gcodeLine(gcode):
+            ["print": [
                 "sequence_id": sequenceId,
                 "command": "gcode_line",
                 "param": gcode + "\n",
             ]]
-        case .startDrying(let amsId, let temperature, let durationMinutes, let rotateTray):
-            dict = ["print": [
+        case let .startDrying(amsId, temperature, durationMinutes, rotateTray):
+            ["print": [
                 "sequence_id": sequenceId,
                 "command": "ams_filament_drying",
                 "ams_id": amsId,
@@ -125,8 +127,8 @@ public enum PrinterCommand {
                 "mode": 1,
                 "rotate_tray": rotateTray,
             ] as [String: Any]]
-        case .stopDrying(let amsId):
-            dict = ["print": [
+        case let .stopDrying(amsId):
+            ["print": [
                 "sequence_id": sequenceId,
                 "command": "ams_filament_drying",
                 "ams_id": amsId,
@@ -137,9 +139,9 @@ public enum PrinterCommand {
                 "mode": 0,
                 "rotate_tray": false,
             ] as [String: Any]]
-        case .amsFilamentSetting(let amsId, let trayId, let trayInfoIdx, let trayType,
-                                let trayColor, let nozzleTempMin, let nozzleTempMax):
-            dict = ["print": [
+        case let .amsFilamentSetting(amsId, trayId, trayInfoIdx, trayType,
+                                     trayColor, nozzleTempMin, nozzleTempMax):
+            ["print": [
                 "sequence_id": sequenceId,
                 "command": "ams_filament_setting",
                 "ams_id": amsId,
@@ -151,9 +153,9 @@ public enum PrinterCommand {
                 "nozzle_temp_max": nozzleTempMax,
             ] as [String: Any]]
         case .getVersion:
-            dict = ["info": ["sequence_id": sequenceId, "command": "get_version"]]
+            ["info": ["sequence_id": sequenceId, "command": "get_version"]]
         case .pushAll:
-            dict = ["pushing": ["sequence_id": sequenceId, "command": "pushall"]]
+            ["pushing": ["sequence_id": sequenceId, "command": "pushall"]]
         }
 
         return try! JSONSerialization.data(withJSONObject: dict)

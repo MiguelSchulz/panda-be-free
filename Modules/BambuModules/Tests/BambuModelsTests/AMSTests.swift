@@ -1,10 +1,9 @@
-import Testing
-import Foundation
 @testable import BambuModels
+import Foundation
+import Testing
 
 @Suite("AMS Parsing and State")
 struct AMSTests {
-
     // MARK: - MQTT Parsing
 
     @Test("Parses AMS units from MQTT payload")
@@ -99,20 +98,20 @@ struct AMSTests {
     // MARK: - PrinterState apply()
 
     @Test("apply() creates AMSUnit from parsed data")
-    func applyCreatesUnit() {
+    func applyCreatesUnit() throws {
         let state = PrinterState()
-        let payload = parsePayload([
+        let payload = try #require(parsePayload([
             "ams": [
                 "ams": [
                     ["id": "0", "humidity": "4", "humidity_raw": "62", "temp": "25.0", "dry_time": 0,
                      "tray": [
-                        ["id": "0", "tray_type": "PLA", "tray_color": "FF0000FF", "remain": 50]
+                         ["id": "0", "tray_type": "PLA", "tray_color": "FF0000FF", "remain": 50]
                      ]]
                 ],
                 "tray_now": "0",
                 "tray_is_bbl_bits": "1",
             ]
-        ])!
+        ]))
         state.apply(payload)
 
         #expect(state.amsUnits.count == 1)
@@ -127,27 +126,27 @@ struct AMSTests {
     }
 
     @Test("apply() merges partial AMS updates")
-    func applyMergesPartial() {
+    func applyMergesPartial() throws {
         let state = PrinterState()
         // First update: create unit with tray
-        let first = parsePayload([
+        let first = try #require(parsePayload([
             "ams": [
                 "ams": [["id": "0", "humidity": "3", "tray": [
                     ["id": "0", "tray_type": "PLA", "tray_color": "FFFF00FF", "remain": 80]
                 ]]],
                 "tray_is_bbl_bits": "1",
             ]
-        ])!
+        ]))
         state.apply(first)
         #expect(state.amsUnits[0].humidityLevel == 3)
         #expect(state.amsUnits[0].trays[0].materialType == "PLA")
 
         // Second update: only humidity changes
-        let second = parsePayload([
+        let second = try #require(parsePayload([
             "ams": [
                 "ams": [["id": "0", "humidity": "5", "tray": []]],
             ]
-        ])!
+        ]))
         state.apply(second)
         #expect(state.amsUnits[0].humidityLevel == 5)
         // Tray data preserved
@@ -155,60 +154,60 @@ struct AMSTests {
     }
 
     @Test("apply() clears tray when only id present")
-    func applyClearsEmptyTray() {
+    func applyClearsEmptyTray() throws {
         let state = PrinterState()
         // First: set tray with material
-        let first = parsePayload([
+        let first = try #require(parsePayload([
             "ams": [
                 "ams": [["id": "0", "tray": [
                     ["id": "1", "tray_type": "ABS", "tray_color": "FF0000FF", "remain": 60]
                 ]]],
                 "tray_is_bbl_bits": "2",
             ]
-        ])!
+        ]))
         state.apply(first)
         #expect(state.amsUnits[0].trays[1].materialType == "ABS")
 
         // Second: tray removed (only id)
-        let second = parsePayload([
+        let second = try #require(parsePayload([
             "ams": [
                 "ams": [["id": "0", "tray": [["id": "1"]]]],
             ]
-        ])!
+        ]))
         state.apply(second)
         #expect(state.amsUnits[0].trays[1].materialType == nil)
         #expect(state.amsUnits[0].trays[1].isEmpty == true)
     }
 
     @Test("apply() updates activeTrayIndex")
-    func applyActiveTray() {
+    func applyActiveTray() throws {
         let state = PrinterState()
         // tray_now = 5 means AMS 1, tray 1
-        let payload = parsePayload([
+        let payload = try #require(parsePayload([
             "ams": ["tray_now": "5", "ams": []]
-        ])!
+        ]))
         state.apply(payload)
         #expect(state.activeTrayIndex == 5)
 
         // tray_now = 255 means none
-        let none = parsePayload([
+        let none = try #require(parsePayload([
             "ams": ["tray_now": "255", "ams": []]
-        ])!
+        ]))
         state.apply(none)
         #expect(state.activeTrayIndex == nil)
     }
 
     @Test("apply() handles remain = -1 as unknown")
-    func applyRemainUnknown() {
+    func applyRemainUnknown() throws {
         let state = PrinterState()
-        let payload = parsePayload([
+        let payload = try #require(parsePayload([
             "ams": [
                 "ams": [["id": "0", "tray": [
                     ["id": "0", "tray_type": "PLA", "tray_color": "FFFF00FF", "remain": -1]
                 ]]],
                 "tray_is_bbl_bits": "0",
             ]
-        ])!
+        ]))
         state.apply(payload)
         #expect(state.amsUnits[0].trays[0].remainPercent == nil)
     }

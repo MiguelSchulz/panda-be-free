@@ -32,14 +32,14 @@ public struct InstructionRow: View {
     @ViewBuilder
     private var markerView: some View {
         switch marker {
-        case .number(let n):
+        case let .number(n):
             Text("\(n)")
                 .font(.caption2.bold())
                 .frame(width: 22, height: 22)
                 .background(Color.accentColor)
                 .foregroundStyle(.white)
                 .clipShape(Circle())
-        case .icon(let symbol):
+        case let .icon(symbol):
             Image(systemSymbol: symbol)
                 .font(.body)
                 .foregroundStyle(.tint)

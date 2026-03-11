@@ -1,11 +1,10 @@
-import Testing
 @testable import BambuModels
 @testable import Onboarding
+import Testing
 
 @Suite("Onboarding ViewModel")
 @MainActor
 struct OnboardingViewModelTests {
-
     // MARK: - Default State
 
     @Test("Default values are empty")
@@ -67,7 +66,7 @@ struct OnboardingViewModelTests {
     // MARK: - testConnection
 
     @Test("testConnection succeeds without saving credentials")
-    func testConnectionSuccess() async {
+    func connectionSuccess() async {
         SharedSettings.printerIP = ""
         let vm = OnboardingViewModel { _, _ in nil }
         vm.ip = "192.168.1.100"
@@ -81,7 +80,7 @@ struct OnboardingViewModelTests {
     }
 
     @Test("testConnection fails and sets error")
-    func testConnectionFailure() async {
+    func connectionFailure() async {
         let vm = OnboardingViewModel { _, _ in "Connection refused" }
         vm.ip = "192.168.1.100"
         vm.accessCode = "wrong"
@@ -93,7 +92,7 @@ struct OnboardingViewModelTests {
     }
 
     @Test("testConnection trims whitespace before testing")
-    func testConnectionTrimsWhitespace() async {
+    func connectionTrimsWhitespace() async {
         var testedIP = ""
         var testedCode = ""
         let vm = OnboardingViewModel { ip, code in
@@ -112,7 +111,7 @@ struct OnboardingViewModelTests {
     // MARK: - testAndSave
 
     @Test("testAndSave succeeds and saves credentials")
-    func testAndSaveSuccess() async {
+    func andSaveSuccess() async {
         let vm = OnboardingViewModel { _, _ in nil }
         vm.ip = "192.168.1.100"
         vm.accessCode = "12345678"
@@ -125,7 +124,7 @@ struct OnboardingViewModelTests {
     }
 
     @Test("testAndSave fails and does not save")
-    func testAndSaveFailure() async {
+    func andSaveFailure() async {
         SharedSettings.printerIP = ""
         let vm = OnboardingViewModel { _, _ in "Connection refused" }
         vm.ip = "192.168.1.100"

@@ -1,10 +1,9 @@
-import Testing
 @testable import BambuModels
 import Foundation
+import Testing
 
 @Suite("Printer Command Payloads")
 struct PrinterCommandTests {
-
     // MARK: - Print Commands
 
     @Test("Pause command")
@@ -49,8 +48,8 @@ struct PrinterCommandTests {
 
     @Test("SpeedLevel labels",
           arguments: zip(
-            PrinterCommand.SpeedLevel.allCases,
-            ["Silent", "Standard", "Sport", "Ludicrous"]
+              PrinterCommand.SpeedLevel.allCases,
+              ["Silent", "Standard", "Sport", "Ludicrous"]
           ))
     func speedLevelLabels(level: PrinterCommand.SpeedLevel, expected: String) {
         #expect(String(localized: level.label) == expected)
@@ -133,8 +132,8 @@ struct PrinterCommandTests {
 
     @Test("DryingPreset temperatures",
           arguments: zip(
-            PrinterCommand.DryingPreset.allCases,
-            [55, 80, 65, 55, 80, 55]
+              PrinterCommand.DryingPreset.allCases,
+              [55, 80, 65, 55, 80, 55]
           ))
     func dryingPresetTemps(preset: PrinterCommand.DryingPreset, expected: Int) {
         #expect(preset.temperature == expected)
