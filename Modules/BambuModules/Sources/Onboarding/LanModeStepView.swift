@@ -16,7 +16,7 @@ struct LanModeStepView: View {
                 InstructionRow(number: 4, text: "The toggle should turn **green** when enabled")
             }
             .padding()
-            .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .navigationTitle("LAN Mode")
     }

@@ -16,7 +16,7 @@ public struct DirectionalButton: View {
                 .font(.title2)
                 .fontWeight(.semibold)
                 .frame(width: 52, height: 52)
-                .background(.ultraThinMaterial, in: Circle())
+                .background(Color(.tertiarySystemGroupedBackground), in: Circle())
         }
         .buttonStyle(.plain)
     }

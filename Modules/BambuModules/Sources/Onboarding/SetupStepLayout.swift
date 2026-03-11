@@ -54,6 +54,7 @@ struct SetupStepLayout<Content: View>: View {
             }
             .padding()
         }
+        .background(Color(.systemGroupedBackground))
         .safeAreaInset(edge: .bottom) {
             Button(action: nextAction) {
                 Group {

@@ -120,6 +120,7 @@ struct DashboardView: View {
             }
             .padding()
         }
+        .background(Color(.systemGroupedBackground))
         .refreshable {
             viewModel.disconnectAll()
             async let connect: Void = viewModel.connectAll(ip: printerIP, accessCode: accessCode)

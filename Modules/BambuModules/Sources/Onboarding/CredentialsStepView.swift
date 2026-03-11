@@ -17,7 +17,7 @@ struct CredentialsStepView: View {
                 InstructionRow(number: 4, text: "Find the **Access Code** displayed under LAN Only Mode")
             }
             .padding()
-            .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             HStack(spacing: 16) {
                 credentialCard(icon: .network, title: "IP Address", example: "192.168.1.100")
@@ -42,7 +42,7 @@ struct CredentialsStepView: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 

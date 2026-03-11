@@ -1,3 +1,4 @@
+import BambuUI
 import SFSafeSymbols
 import SwiftUI
 import UIKit
@@ -88,7 +89,7 @@ struct CameraWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.blue)
+            .tint(.bambuBrand)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -59,6 +59,7 @@ public struct PrinterControlView: View {
                 }
                 .padding()
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Control")
             .alert("Axes Not Homed", isPresented: $viewModel.showHomingWarning) {
                 Button("OK", role: .cancel) {}

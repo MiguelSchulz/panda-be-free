@@ -32,7 +32,7 @@ struct JogPadView: View {
                     Image(systemSymbol: .houseFill)
                         .font(.title3)
                         .frame(width: 52, height: 52)
-                        .background(.ultraThinMaterial, in: Circle())
+                        .background(Color(.tertiarySystemGroupedBackground), in: Circle())
                 }
                 .buttonStyle(.plain)
 

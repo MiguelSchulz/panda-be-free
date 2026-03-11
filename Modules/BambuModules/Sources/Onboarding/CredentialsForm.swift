@@ -69,7 +69,7 @@ struct CredentialsForm: View {
             }
         }
         .padding()
-        .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
         Label {
             Text("Your iPhone must be on the same network as your printer (LAN mode only). Using a VPN like Tailscale or WireGuard is the easiest way to connect remotely.")

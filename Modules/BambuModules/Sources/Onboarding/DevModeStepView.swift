@@ -17,7 +17,7 @@ struct DevModeStepView: View {
                 InstructionRow(number: 5, text: "The button should turn **green** when enabled")
             }
             .padding()
-            .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             Text("Developer Mode disables cloud authentication so third-party apps can connect directly.")
                 .font(.caption)

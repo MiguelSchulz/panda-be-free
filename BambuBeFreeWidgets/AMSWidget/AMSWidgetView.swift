@@ -145,7 +145,7 @@ struct AMSWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.blue)
+            .tint(.bambuBrand)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
@@ -187,7 +187,7 @@ struct AMSWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.blue)
+            .tint(.bambuBrand)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)

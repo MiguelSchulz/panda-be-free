@@ -17,7 +17,7 @@ struct SlicerSetupView: View {
                     InstructionRow(icon: .keyFill, text: "Enter your **Access Code** when prompted")
                 }
                 .padding()
-                .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+                .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
                 Text("This step is optional for using this app, but required to send prints over LAN.")
                     .font(.caption)
