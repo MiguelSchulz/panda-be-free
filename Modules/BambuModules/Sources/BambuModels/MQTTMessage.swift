@@ -7,7 +7,7 @@ public struct AMSParsedUnit {
     public var humidity: Int? // 1-5
     public var humidityRaw: Int? // 0-100
     public var temp: Double?
-    public var dryTime: Int? // seconds
+    public var dryTime: Int? // minutes (from MQTT)
     public var trays: [AMSParsedTray]
 
     public init(id: Int, hwVersion: String? = nil, humidity: Int? = nil,

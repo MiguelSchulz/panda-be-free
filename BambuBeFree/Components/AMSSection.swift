@@ -122,7 +122,7 @@ struct AMSSection: View {
                     .font(.caption)
             }
             .buttonStyle(.bordered)
-            .disabled(viewModel.contentState.status != .idle)
+            .disabled(viewModel.contentState.status != .idle && viewModel.contentState.status != .completed)
         }
     }
 }

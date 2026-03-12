@@ -53,7 +53,7 @@ final class DashboardViewModel {
     private var commandedBedTarget = 0
     private var commandedFanSpeeds: [Int: Int] = [:]
     private var dryingCommandTime: Date?
-    private var commandedDryingState: [Int: Int] = [:] // amsId -> dryTimeRemaining
+    private var commandedDryingState: [Int: Int] = [:] // amsId -> dryTimeRemaining (minutes)
     private var lastWidgetReload: Date?
 
     var mqttServiceRef: any MQTTServiceProtocol {
@@ -367,12 +367,11 @@ final class DashboardViewModel {
 
     func startDrying() {
         guard let amsId = dryingAmsId else { return }
-        let durationSeconds = dryingDurationMinutes * 60
         dryingCommandTime = Date.now
-        commandedDryingState[amsId] = durationSeconds
+        commandedDryingState[amsId] = dryingDurationMinutes
         // Optimistically update UI
         if let unit = printerState.amsUnits.first(where: { $0.id == amsId }) {
-            unit.dryTimeRemaining = durationSeconds
+            unit.dryTimeRemaining = dryingDurationMinutes
         }
         mqttService.sendCommand(.startDrying(
             amsId: amsId,

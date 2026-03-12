@@ -67,16 +67,16 @@ struct AMSTests {
         #expect(tray?.remain == nil)
     }
 
-    @Test("Parses drying time")
+    @Test("Parses drying time in minutes")
     func parseDryTime() {
         let payload = parsePayload([
             "ams": [
                 "ams": [
-                    ["id": "0", "dry_time": 3600, "tray": []]
+                    ["id": "0", "dry_time": 60, "tray": []]
                 ]
             ]
         ])
-        #expect(payload?.amsUnits?[0].dryTime == 3600)
+        #expect(payload?.amsUnits?[0].dryTime == 60)
     }
 
     @Test("Parses tray_now")
@@ -229,11 +229,23 @@ struct AMSTests {
 
     // MARK: - AMSUnit Computed Properties
 
+    @Test("apply() passes dry_time minutes directly to dryTimeRemaining")
+    func applyDryTime() throws {
+        let state = PrinterState()
+        let payload = try #require(parsePayload([
+            "ams": [
+                "ams": [["id": "0", "dry_time": 540, "tray": []]]
+            ]
+        ]))
+        state.apply(payload)
+        #expect(state.amsUnits[0].dryTimeRemaining == 540)
+    }
+
     @Test("isDrying returns true when dryTimeRemaining > 0")
     func isDrying() {
         let unit = AMSUnit(id: 0)
         #expect(unit.isDrying == false)
-        unit.dryTimeRemaining = 3600
+        unit.dryTimeRemaining = 60
         #expect(unit.isDrying == true)
     }
 
@@ -241,13 +253,13 @@ struct AMSTests {
     func dryTimeFormatted() {
         let unit = AMSUnit(id: 0)
 
-        unit.dryTimeRemaining = 3661 // 1h 1m
+        unit.dryTimeRemaining = 61 // 1h 1m
         #expect(unit.dryTimeFormatted == "1h 1m")
 
-        unit.dryTimeRemaining = 300 // 5m
+        unit.dryTimeRemaining = 5 // 5m
         #expect(unit.dryTimeFormatted == "5m")
 
-        unit.dryTimeRemaining = 7200 // 2h 0m
+        unit.dryTimeRemaining = 120 // 2h 0m
         #expect(unit.dryTimeFormatted == "2h 0m")
     }
 

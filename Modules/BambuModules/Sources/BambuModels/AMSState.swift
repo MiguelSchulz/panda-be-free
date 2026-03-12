@@ -95,7 +95,7 @@ public final class AMSUnit: Identifiable {
     public var humidityLevel = 0 // 1-5
     public var humidityRaw = 0 // 0-100%
     public var temperature: Double = 0 // Celsius
-    public var dryTimeRemaining = 0 // seconds, 0 = not drying
+    public var dryTimeRemaining = 0 // minutes, 0 = not drying
     public var trays: [AMSTray] = (0...3).map { AMSTray(id: $0) }
 
     public var amsType: AMSType? {
@@ -107,8 +107,8 @@ public final class AMSUnit: Identifiable {
     }
 
     public var dryTimeFormatted: String {
-        let hours = dryTimeRemaining / 3600
-        let minutes = (dryTimeRemaining % 3600) / 60
+        let hours = dryTimeRemaining / 60
+        let minutes = dryTimeRemaining % 60
         if hours > 0 {
             return String(localized: "\(hours)h \(minutes)m")
         }
