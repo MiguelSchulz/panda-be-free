@@ -70,7 +70,7 @@ public struct PrinterStateSnapshot: Codable, Sendable {
     public init(from state: PrinterState) {
         self.contentState = state.contentState
         self.activeTrayIndex = state.activeTrayIndex
-        self.lastUpdated = state.lastUpdated ?? Date()
+        self.lastUpdated = state.lastUpdated ?? Date.now
 
         self.amsUnits = state.amsUnits.map { unit in
             AMSUnitSnapshot(

@@ -42,17 +42,17 @@ struct PrintStateWidgetProvider: TimelineProvider {
     func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<PrintStateWidgetEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = PrintStateWidgetEntry(date: .now, state: .notConfigured)
-            let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))
+            let timeline = Timeline(entries: [entry], policy: .after(Date.now.addingTimeInterval(60 * 60)))
             completion(timeline)
             return
         }
 
         // If cache was just written (by app or refresh intent), use it directly
         if let cached = SharedSettings.cachedPrinterState,
-           Date().timeIntervalSince(cached.lastUpdated) < 15
+           Date.now.timeIntervalSince(cached.lastUpdated) < 15
         {
             let entry = PrintStateWidgetEntry(date: .now, state: .data(cached.contentState))
-            let nextRefresh = Date().addingTimeInterval(15 * 60)
+            let nextRefresh = Date.now.addingTimeInterval(15 * 60)
             completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
             return
         }
@@ -75,7 +75,7 @@ struct PrintStateWidgetProvider: TimelineProvider {
                     entry = PrintStateWidgetEntry(date: .now, state: .error(error.localizedDescription))
                 }
             }
-            let nextRefresh = Date().addingTimeInterval(15 * 60)
+            let nextRefresh = Date.now.addingTimeInterval(15 * 60)
             completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
         }
     }

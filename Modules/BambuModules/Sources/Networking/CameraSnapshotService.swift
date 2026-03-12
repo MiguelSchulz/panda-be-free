@@ -463,9 +463,9 @@ public enum CameraSnapshotService {
 
         // 4. RTP receive loop — capture first decodable frame
         var nalAssembler = SnapshotNALAssembler()
-        let deadline = Date().addingTimeInterval(timeout)
+        let deadline = Date.now.addingTimeInterval(timeout)
 
-        while Date() < deadline {
+        while Date.now < deadline {
             // Find next interleaved frame marker
             while true {
                 while readBuffer.isEmpty {
@@ -571,10 +571,10 @@ public enum CameraSnapshotService {
 
     private static func receive(connection: NWConnection, length: Int, timeout: TimeInterval) async throws -> Data {
         var buffer = Data()
-        let deadline = Date().addingTimeInterval(timeout)
+        let deadline = Date.now.addingTimeInterval(timeout)
 
         while buffer.count < length {
-            guard Date() < deadline else { throw CameraSnapshotError.timeout }
+            guard Date.now < deadline else { throw CameraSnapshotError.timeout }
 
             let chunk: Data = try await withCheckedThrowingContinuation { cont in
                 connection.receive(

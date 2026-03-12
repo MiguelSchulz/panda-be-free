@@ -106,30 +106,30 @@ final class DashboardViewModel {
                 // Sync light state from printer, but ignore for 3s after
                 // a local toggle to prevent the old state snapping back
                 if payload.chamberLightOn != nil {
-                    let suppress = self.lightCommandTime.map { Date().timeIntervalSince($0) < 3 } ?? false
+                    let suppress = self.lightCommandTime.map { Date.now.timeIntervalSince($0) < 3 } ?? false
                     if !suppress {
                         self.chamberLightOn = self.printerState.chamberLightOn
                     }
                 }
                 if payload.airductMode != nil {
-                    let suppress = self.airductCommandTime.map { Date().timeIntervalSince($0) < 3 } ?? false
+                    let suppress = self.airductCommandTime.map { Date.now.timeIntervalSince($0) < 3 } ?? false
                     if !suppress {
                         self.selectedAirductMode = self.printerState.airductMode
                     }
                 }
                 // Suppress snapback for manually-set temperatures
                 if payload.nozzleTargetTemper != nil,
-                   let t = self.nozzleTempCommandTime, Date().timeIntervalSince(t) < 3
+                   let t = self.nozzleTempCommandTime, Date.now.timeIntervalSince(t) < 3
                 {
                     self.printerState.nozzleTargetTemp = self.commandedNozzleTarget
                 }
                 if payload.bedTargetTemper != nil,
-                   let t = self.bedTempCommandTime, Date().timeIntervalSince(t) < 3
+                   let t = self.bedTempCommandTime, Date.now.timeIntervalSince(t) < 3
                 {
                     self.printerState.bedTargetTemp = self.commandedBedTarget
                 }
                 // Suppress snapback for manually-set fan speeds
-                for (index, time) in self.fanCommandTimes where Date().timeIntervalSince(time) < 3 {
+                for (index, time) in self.fanCommandTimes where Date.now.timeIntervalSince(time) < 3 {
                     if let speed = self.commandedFanSpeeds[index] {
                         switch index {
                         case 1: self.printerState.partFanSpeed = speed
@@ -141,7 +141,7 @@ final class DashboardViewModel {
                 }
                 // Suppress snapback for AMS drying commands
                 if payload.amsUnits != nil,
-                   let t = self.dryingCommandTime, Date().timeIntervalSince(t) < 5
+                   let t = self.dryingCommandTime, Date.now.timeIntervalSince(t) < 5
                 {
                     for (amsId, dryTime) in self.commandedDryingState {
                         if let unit = self.printerState.amsUnits.first(where: { $0.id == amsId }) {
@@ -153,8 +153,8 @@ final class DashboardViewModel {
                 // Update widget cache with latest state
                 SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: self.printerState)
                 // Reload widgets periodically (debounced to every 30s)
-                if self.lastWidgetReload == nil || Date().timeIntervalSince(self.lastWidgetReload!) > 30 {
-                    self.lastWidgetReload = Date()
+                if self.lastWidgetReload.map({ Date.now.timeIntervalSince($0) > 30 }) ?? true {
+                    self.lastWidgetReload = Date.now
                     WidgetCenter.shared.reloadTimelines(ofKind: "PrintStateWidget")
                     WidgetCenter.shared.reloadTimelines(ofKind: "AMSWidget")
                 }
@@ -184,8 +184,8 @@ final class DashboardViewModel {
         cameraManager.connect(ip: ip, accessCode: accessCode, printerType: printerType)
 
         // Wait for connection result (connected, error, or 10s timeout)
-        let deadline = Date().addingTimeInterval(10)
-        while Date() < deadline {
+        let deadline = Date.now.addingTimeInterval(10)
+        while Date.now < deadline {
             if case .connected = mqttConnectionState { return }
             if case .error = mqttConnectionState { return }
             try? await Task.sleep(for: .milliseconds(100))
@@ -228,7 +228,7 @@ final class DashboardViewModel {
 
     func toggleLight(on: Bool) {
         chamberLightOn = on
-        lightCommandTime = Date()
+        lightCommandTime = Date.now
         mqttService.sendCommand(.chamberLight(on: on))
     }
 
@@ -254,7 +254,7 @@ final class DashboardViewModel {
 
     private func applyAirductMode(_ mode: Int) {
         selectedAirductMode = mode
-        airductCommandTime = Date()
+        airductCommandTime = Date.now
         mqttService.sendCommand(.airductMode(mode: mode))
     }
 
@@ -262,7 +262,7 @@ final class DashboardViewModel {
         let clamped = max(0, min(300, temp))
         commandedNozzleTarget = clamped
         printerState.nozzleTargetTemp = clamped
-        nozzleTempCommandTime = Date()
+        nozzleTempCommandTime = Date.now
         mqttService.sendCommand(.gcodeLine("M104 S\(clamped)"))
     }
 
@@ -270,7 +270,7 @@ final class DashboardViewModel {
         let clamped = max(0, min(110, temp))
         commandedBedTarget = clamped
         printerState.bedTargetTemp = clamped
-        bedTempCommandTime = Date()
+        bedTempCommandTime = Date.now
         mqttService.sendCommand(.gcodeLine("M140 S\(clamped)"))
     }
 
@@ -278,7 +278,7 @@ final class DashboardViewModel {
         let clamped = max(0, min(100, percent))
         let value255 = Int(Double(clamped) / 100.0 * 255.0)
         commandedFanSpeeds[fanIndex] = value255
-        fanCommandTimes[fanIndex] = Date()
+        fanCommandTimes[fanIndex] = Date.now
         switch fanIndex {
         case 1: printerState.partFanSpeed = value255
         case 2: printerState.auxFanSpeed = value255
@@ -360,7 +360,7 @@ final class DashboardViewModel {
     func startDrying() {
         guard let amsId = dryingAmsId else { return }
         let durationSeconds = dryingDurationMinutes * 60
-        dryingCommandTime = Date()
+        dryingCommandTime = Date.now
         commandedDryingState[amsId] = durationSeconds
         // Optimistically update UI
         if let unit = printerState.amsUnits.first(where: { $0.id == amsId }) {
@@ -382,7 +382,7 @@ final class DashboardViewModel {
 
     func stopDrying() {
         guard let amsId = stoppingDryingAmsId else { return }
-        dryingCommandTime = Date()
+        dryingCommandTime = Date.now
         commandedDryingState[amsId] = 0
         // Optimistically update UI
         if let unit = printerState.amsUnits.first(where: { $0.id == amsId }) {

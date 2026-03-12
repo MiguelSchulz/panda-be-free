@@ -43,7 +43,7 @@ struct CameraWidgetProvider: TimelineProvider {
     func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<CameraWidgetEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = CameraWidgetEntry(date: .now, state: .notConfigured)
-            let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))
+            let timeline = Timeline(entries: [entry], policy: .after(Date.now.addingTimeInterval(60 * 60)))
             completion(timeline)
             return
         }
@@ -59,7 +59,7 @@ struct CameraWidgetProvider: TimelineProvider {
                 )
 
                 SharedSettings.cachedSnapshotData = jpegData
-                SharedSettings.cachedSnapshotDate = Date()
+                SharedSettings.cachedSnapshotDate = Date.now
 
                 entry = CameraWidgetEntry(date: .now, state: .snapshot(jpegData, capturedAt: .now))
             } catch {
@@ -75,7 +75,7 @@ struct CameraWidgetProvider: TimelineProvider {
                 }
             }
 
-            let nextRefresh = Date().addingTimeInterval(15 * 60)
+            let nextRefresh = Date.now.addingTimeInterval(15 * 60)
             let timeline = Timeline(entries: [entry], policy: .after(nextRefresh))
             completion(timeline)
         }

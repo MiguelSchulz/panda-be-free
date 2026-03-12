@@ -1,6 +1,9 @@
 import BambuModels
 import CocoaMQTT
 import Foundation
+import os
+
+private let logger = Logger(subsystem: "BambuBeFree", category: "MQTT")
 
 public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
     private var mqtt: CocoaMQTT?
@@ -24,7 +27,7 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         self.stateStream = stateStream
         self.stateContinuation = stateContinuation
         stateContinuation.onTermination = { _ in
-            print("[MQTT] State stream terminated")
+            logger.debug("State stream terminated")
         }
 
         let (messageStream, messageContinuation) = AsyncStream.makeStream(
@@ -33,16 +36,16 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         self.messageStream = messageStream
         self.messageContinuation = messageContinuation
         messageContinuation.onTermination = { _ in
-            print("[MQTT] Message stream terminated")
+            logger.debug("Message stream terminated")
         }
     }
 
     public func connect(ip: String, accessCode: String) {
         disconnect()
 
-        print("[MQTT] Connecting to \(ip):8883...")
+        logger.info("Connecting to \(ip):8883...")
 
-        let clientId = "BambuBeFree_\(Int(Date().timeIntervalSince1970))"
+        let clientId = "BambuBeFree_\(Int(Date.now.timeIntervalSince1970))"
         let client = CocoaMQTT(clientID: clientId, host: ip, port: 8883)
         client.username = "bblp"
         client.password = accessCode
@@ -60,44 +63,44 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
 
         // Accept the printer's self-signed certificate (signed by "BBL CA")
         client.didReceiveTrust = { _, _, completionHandler in
-            print("[MQTT] Trust evaluation — accepting self-signed certificate")
+            logger.debug("Trust evaluation — accepting self-signed certificate")
             completionHandler(true)
         }
 
         delegateHandler.onConnected = { [weak self] mqtt in
-            print("[MQTT] Connected! Subscribing to device/+/report")
+            logger.info("Connected! Subscribing to device/+/report")
             self?.connectionState = .connected
             self?.stateContinuation?.yield(.connected)
             // Subscribe to all device reports to auto-discover serial number
             mqtt.subscribe("device/+/report")
             // If we already know the serial, request full state immediately
             if let serial = self?.serialNumber, !serial.isEmpty {
-                print("[MQTT] Known serial: \(serial), sending pushAll")
+                logger.info("Known serial: \(serial), sending pushAll")
                 self?.publishTopic = "device/\(serial)/request"
                 self?.sendCommand(.pushAll)
             }
         }
 
         delegateHandler.onDisconnected = { [weak self] in
-            print("[MQTT] Disconnected")
+            logger.info("Disconnected")
             self?.connectionState = .disconnected
             self?.stateContinuation?.yield(.disconnected)
         }
 
         delegateHandler.onError = { [weak self] message in
-            print("[MQTT] Error: \(message)")
+            logger.error("Error: \(message)")
             self?.connectionState = .error(message)
             self?.stateContinuation?.yield(.error(message))
         }
 
         delegateHandler.onMessage = { [weak self] topic, data in
-            print("[MQTT] Message on topic: \(topic) (\(data.count) bytes)")
+            logger.debug("Message on topic: \(topic) (\(data.count) bytes)")
             // Auto-discover serial number from topic: device/{SERIAL}/report
             if self?.serialNumber == nil {
                 let parts = topic.split(separator: "/")
                 if parts.count == 3, parts[0] == "device", parts[2] == "report" {
                     let serial = String(parts[1])
-                    print("[MQTT] Discovered serial: \(serial)")
+                    logger.info("Discovered serial: \(serial)")
                     self?.serialNumber = serial
                     self?.publishTopic = "device/\(serial)/request"
                     // Now that we have serial, request full state and version info
@@ -107,10 +110,10 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
             }
 
             if let payload = BambuMQTTPayload.parse(from: data) {
-                print("[MQTT] Parsed payload — state: \(payload.gcodeState ?? "nil"), progress: \(payload.mcPercent ?? -1)%")
+                logger.debug("Parsed payload — state: \(payload.gcodeState ?? "nil"), progress: \(payload.mcPercent ?? -1)%")
                 self?.messageContinuation?.yield(payload)
             } else {
-                print("[MQTT] Failed to parse payload")
+                logger.warning("Failed to parse payload")
             }
         }
 
@@ -118,7 +121,7 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         stateContinuation?.yield(.connecting)
         self.mqtt = client
         let result = client.connect()
-        print("[MQTT] connect() returned: \(result)")
+        logger.debug("connect() returned: \(result)")
     }
 
     public func disconnect() {
@@ -134,7 +137,7 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         guard let mqtt, let topic = publishTopic else { return }
         let data = command.payload()
         guard let jsonString = String(data: data, encoding: .utf8) else { return }
-        print("[MQTT] Publishing to \(topic): \(jsonString.prefix(100))...")
+        logger.debug("Publishing to \(topic): \(jsonString.prefix(100))...")
         mqtt.publish(topic, withString: jsonString, qos: .qos1)
     }
 }
@@ -149,7 +152,7 @@ private class DelegateHandler: CocoaMQTTDelegate {
     var onMessage: ((String, Data) -> Void)?
 
     func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
-        print("[MQTT] didConnectAck: \(ack)")
+        logger.debug("didConnectAck: \(String(describing: ack))")
         if ack == .accept {
             onConnected?(mqtt)
         } else {
@@ -171,7 +174,7 @@ private class DelegateHandler: CocoaMQTTDelegate {
     }
 
     func mqtt(_: CocoaMQTT, didSubscribeTopics success: NSDictionary, failed: [String]) {
-        print("[MQTT] Subscribed — success: \(success), failed: \(failed)")
+        logger.debug("Subscribed — success: \(success), failed: \(failed)")
     }
 
     func mqtt(_: CocoaMQTT, didUnsubscribeTopics _: [String]) {}
@@ -180,7 +183,7 @@ private class DelegateHandler: CocoaMQTTDelegate {
     func mqttDidReceivePong(_: CocoaMQTT) {}
 
     func mqttDidDisconnect(_: CocoaMQTT, withError err: (any Error)?) {
-        print("[MQTT] mqttDidDisconnect, error: \(err?.localizedDescription ?? "none")")
+        logger.debug("mqttDidDisconnect, error: \(err?.localizedDescription ?? "none")")
         if let err {
             let message = err.localizedDescription
             onError?(message)

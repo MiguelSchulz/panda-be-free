@@ -74,7 +74,7 @@ private final class SnapshotSession: @unchecked Sendable {
     }
 
     func start() {
-        let clientId = "BambuWidget_\(Int(Date().timeIntervalSince1970))"
+        let clientId = "BambuWidget_\(Int(Date.now.timeIntervalSince1970))"
         let client = CocoaMQTT(clientID: clientId, host: ip, port: 8883)
         client.username = "bblp"
         client.password = accessCode

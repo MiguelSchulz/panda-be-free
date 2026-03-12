@@ -170,6 +170,6 @@ public final class PrinterState {
             }
         }
 
-        lastUpdated = Date()
+        lastUpdated = Date.now
     }
 }

@@ -37,7 +37,7 @@ struct BambuBeFreeApp: App {
         service.connect(ip: ip, accessCode: accessCode)
         defer { service.disconnect() }
 
-        let deadline = Date().addingTimeInterval(10)
+        let deadline = Date.now.addingTimeInterval(10)
         for await state in stream {
             switch state {
             case .connected:
@@ -47,7 +47,7 @@ struct BambuBeFreeApp: App {
             default:
                 break
             }
-            if Date() > deadline { break }
+            if Date.now > deadline { break }
         }
         return String(localized: "Connection timed out. Make sure the printer is turned on and that your iPhone is on the same Wi-Fi network.")
     }
@@ -56,26 +56,20 @@ struct BambuBeFreeApp: App {
         WindowGroup {
             if hasConfig {
                 TabView(selection: $selectedTab) {
-                    DashboardView(viewModel: dashboardViewModel)
-                        .tabItem {
-                            Label("Dashboard", systemSymbol: .printerFill)
-                        }
-                        .tag(RootTab.dashboard)
-                    PrinterControlView(
-                        mqttService: dashboardViewModel.mqttServiceRef,
-                        cameraProvider: dashboardViewModel.cameraManager,
-                        isLightOn: dashboardViewModel.chamberLightOn,
-                        printerState: dashboardViewModel.printerState
-                    )
-                    .tabItem {
-                        Label("Control", systemSymbol: .gamecontrollerFill)
+                    Tab("Dashboard", systemImage: SFSymbol.printerFill.rawValue, value: RootTab.dashboard) {
+                        DashboardView(viewModel: dashboardViewModel)
                     }
-                    .tag(RootTab.control)
-                    PlaceholderView()
-                        .tabItem {
-                            Label("More", systemSymbol: .ellipsisCircle)
-                        }
-                        .tag(RootTab.more)
+                    Tab("Control", systemImage: SFSymbol.gamecontrollerFill.rawValue, value: RootTab.control) {
+                        PrinterControlView(
+                            mqttService: dashboardViewModel.mqttServiceRef,
+                            cameraProvider: dashboardViewModel.cameraManager,
+                            isLightOn: dashboardViewModel.chamberLightOn,
+                            printerState: dashboardViewModel.printerState
+                        )
+                    }
+                    Tab("More", systemImage: SFSymbol.ellipsisCircle.rawValue, value: RootTab.more) {
+                        PlaceholderView()
+                    }
                 }
                 .onNavigationReceive(assign: $selectedTab)
             } else {

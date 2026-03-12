@@ -56,7 +56,7 @@ struct PrinterOverviewProvider: TimelineProvider {
     func getTimeline(in _: Context, completion: @escaping @Sendable (Timeline<PrinterOverviewEntry>) -> Void) {
         guard SharedSettings.hasConfiguration else {
             let entry = PrinterOverviewEntry(date: .now, cameraState: .loading, printState: .loading)
-            let timeline = Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(60 * 60)))
+            let timeline = Timeline(entries: [entry], policy: .after(Date.now.addingTimeInterval(60 * 60)))
             completion(timeline)
             return
         }
@@ -70,7 +70,7 @@ struct PrinterOverviewProvider: TimelineProvider {
                         printerType: SharedSettings.printerType
                     )
                     SharedSettings.cachedSnapshotData = jpegData
-                    SharedSettings.cachedSnapshotDate = Date()
+                    SharedSettings.cachedSnapshotDate = Date.now
                     return .snapshot(jpegData, capturedAt: .now)
                 } catch {
                     if let data = SharedSettings.cachedSnapshotData,
@@ -84,7 +84,7 @@ struct PrinterOverviewProvider: TimelineProvider {
 
             async let printResult: PrintHalfState = {
                 if let cached = SharedSettings.cachedPrinterState,
-                   Date().timeIntervalSince(cached.lastUpdated) < 15
+                   Date.now.timeIntervalSince(cached.lastUpdated) < 15
                 {
                     return .data(cached.contentState)
                 }
@@ -107,7 +107,7 @@ struct PrinterOverviewProvider: TimelineProvider {
             let printState = await printResult
 
             let entry = PrinterOverviewEntry(date: .now, cameraState: cameraState, printState: printState)
-            let nextRefresh = Date().addingTimeInterval(15 * 60)
+            let nextRefresh = Date.now.addingTimeInterval(15 * 60)
             completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
         }
     }
