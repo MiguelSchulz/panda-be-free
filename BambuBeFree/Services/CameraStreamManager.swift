@@ -29,7 +29,8 @@ final class CameraStreamManager: CameraStreamProviding {
 
     private var connection: NWConnection?
     // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
-    nonisolated(unsafe) private var streamTask: Task<Void, Never>?
+    // swiftformat:disable:next nonisolatedUnsafe
+    @ObservationIgnored nonisolated(unsafe) private var streamTask: Task<Void, Never>?
     private var decompressionSession: VTDecompressionSession?
     private var formatDescription: CMVideoFormatDescription?
     private var spsData: Data?
@@ -419,13 +420,13 @@ final class CameraStreamManager: CameraStreamProviding {
         ) == noErr, let blockBuffer else { return }
 
         // Copy length prefix + NAL data into block buffer
-        withUnsafeBytes(of: &lengthBE) { ptr in
+        _ = withUnsafeBytes(of: &lengthBE) { ptr in
             CMBlockBufferReplaceDataBytes(
                 with: ptr.baseAddress!, blockBuffer: blockBuffer,
                 offsetIntoDestination: 0, dataLength: 4
             )
         }
-        nalData.withUnsafeBytes { ptr in
+        _ = nalData.withUnsafeBytes { ptr in
             CMBlockBufferReplaceDataBytes(
                 with: ptr.baseAddress!, blockBuffer: blockBuffer,
                 offsetIntoDestination: 4, dataLength: nalData.count
@@ -447,8 +448,8 @@ final class CameraStreamManager: CameraStreamProviding {
             sampleBufferOut: &sampleBuffer
         ) == noErr, let sampleBuffer else { return }
 
-        // Decode synchronously, capture result in local var
-        var decodedImage: UIImage?
+        // Decode synchronously; lock satisfies @Sendable requirement on the callback
+        let decodedImage = OSAllocatedUnfairLock<UIImage?>(initialState: nil)
         var flagsOut: VTDecodeInfoFlags = []
         VTDecompressionSessionDecodeFrame(
             session,
@@ -457,10 +458,10 @@ final class CameraStreamManager: CameraStreamProviding {
             infoFlagsOut: &flagsOut
         ) { status, _, imageBuffer, _, _ in
             guard status == noErr, let pixelBuffer = imageBuffer else { return }
-            decodedImage = pixelBufferToUIImage(pixelBuffer)
+            decodedImage.withLock { $0 = pixelBufferToUIImage(pixelBuffer) }
         }
 
-        if let image = decodedImage {
+        if let image = decodedImage.withLock({ $0 }) {
             currentFrame = image
         }
     }
