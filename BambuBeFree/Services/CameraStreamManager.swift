@@ -1,12 +1,16 @@
 import BambuModels
 import BambuUI
 import CoreMedia
+import CoreVideo
 import CryptoKit
 import Foundation
 import Network
 import os
 import UIKit
 import VideoToolbox
+
+// CVBuffer is an immutable, thread-safe Core Foundation type.
+extension CVBuffer: @retroactive @unchecked Sendable {}
 
 enum CameraConnectionState: Equatable {
     case disconnected
