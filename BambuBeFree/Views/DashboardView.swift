@@ -1,6 +1,7 @@
 import BambuModels
 import BambuUI
 import NavigatorUI
+import Shimmer
 import SwiftUI
 import WidgetKit
 
@@ -15,6 +16,12 @@ struct DashboardView: View {
     @Bindable var viewModel: DashboardViewModel
     @State private var isFullscreen = false
     @State private var wasConnected = false
+    @State private var showConnectionError = false
+    @State private var connectionErrorMessage = ""
+
+    private var isLoading: Bool {
+        !viewModel.hasReceivedInitialData
+    }
 
     var body: some View {
         ManagedNavigationStack {
@@ -59,6 +66,31 @@ struct DashboardView: View {
                 onToggleLight: viewModel.isConnected ? { viewModel.toggleLight(on: $0) } : nil
             )
         }
+        .onChange(of: viewModel.mqttConnectionState) { _, newState in
+            if case let .error(message) = newState {
+                connectionErrorMessage = message
+                showConnectionError = true
+            }
+        }
+        .alert("Connection Failed", isPresented: $showConnectionError) {
+            Button("Retry", role: .cancel) {
+                viewModel.disconnectAll()
+                Task {
+                    await viewModel.connectAll(
+                        ip: printerIP,
+                        accessCode: accessCode,
+                        printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
+                    )
+                }
+            }
+            Button("Disconnect", role: .destructive) {
+                viewModel.disconnectAll()
+                printerIP = ""
+                accessCode = ""
+            }
+        } message: {
+            Text(connectionErrorMessage)
+        }
     }
 
     private func handleScenePhaseChange(_ newPhase: ScenePhase) {
@@ -66,7 +98,9 @@ struct DashboardView: View {
         case .background:
             if viewModel.isConnected || viewModel.mqttConnectionState == .connecting {
                 wasConnected = true
-                SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: viewModel.printerState)
+                if viewModel.hasReceivedInitialData {
+                    SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: viewModel.printerState)
+                }
                 viewModel.disconnectAll()
                 WidgetCenter.shared.reloadAllTimelines()
             }
@@ -97,16 +131,20 @@ struct DashboardView: View {
                     onToggleLight: viewModel.isConnected ? { viewModel.toggleLight(on: $0) } : nil,
                     onTapFullscreen: { isFullscreen = true }
                 )
-
-                ConnectionBanner(state: viewModel.mqttConnectionState)
+                .redacted(reason: isLoading ? .placeholder : [])
+                .shimmering(active: isLoading)
 
                 PrintProgressSection(state: viewModel.contentState)
+                    .redacted(reason: isLoading ? .placeholder : [])
+                    .shimmering(active: isLoading)
 
                 TemperatureSection(viewModel: viewModel)
+                    .redacted(reason: isLoading ? .placeholder : [])
+                    .shimmering(active: isLoading)
 
-                if viewModel.isConnected {
-                    FanSection(viewModel: viewModel)
-                }
+                FanSection(viewModel: viewModel)
+                    .redacted(reason: isLoading ? .placeholder : [])
+                    .shimmering(active: isLoading)
 
                 if viewModel.isConnected && !viewModel.printerState.amsUnits.isEmpty {
                     ForEach(viewModel.printerState.amsUnits) { amsUnit in

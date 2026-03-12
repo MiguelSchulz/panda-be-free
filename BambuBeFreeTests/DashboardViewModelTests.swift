@@ -291,6 +291,57 @@ struct DashboardViewModelTests {
         #expect(vm.dryingDurationMinutes == 600)
     }
 
+    // MARK: - Loading State
+
+    @Test("hasReceivedInitialData is false before any MQTT data")
+    func hasReceivedInitialDataDefault() {
+        let vm = DashboardViewModel(mqttService: MockMQTTService())
+        #expect(vm.hasReceivedInitialData == false)
+    }
+
+    @Test("hasReceivedInitialData becomes true after printerState.lastUpdated is set")
+    func hasReceivedInitialDataAfterUpdate() {
+        let vm = DashboardViewModel(mqttService: MockMQTTService())
+        #expect(vm.hasReceivedInitialData == false)
+
+        vm.printerState.lastUpdated = Date.now
+        #expect(vm.hasReceivedInitialData == true)
+    }
+
+    @Test("hasReceivedInitialData is independent of connection state")
+    func hasReceivedInitialDataIndependentOfConnection() {
+        let vm = DashboardViewModel(mqttService: MockMQTTService())
+
+        // Connected but no data yet
+        vm.mqttConnectionState = .connected
+        #expect(vm.hasReceivedInitialData == false)
+
+        // Error but no data yet
+        vm.mqttConnectionState = .error("timeout")
+        #expect(vm.hasReceivedInitialData == false)
+
+        // Data arrives regardless of connection state
+        vm.printerState.lastUpdated = Date.now
+        #expect(vm.hasReceivedInitialData == true)
+
+        // Stays true even after disconnect
+        vm.mqttConnectionState = .disconnected
+        #expect(vm.hasReceivedInitialData == true)
+    }
+
+    @Test("contentState returns placeholder values before initial data")
+    func contentStatePlaceholderBeforeData() {
+        let vm = DashboardViewModel(mqttService: MockMQTTService())
+        #expect(vm.hasReceivedInitialData == false)
+
+        // Default PrinterState values produce idle status with zero temps
+        let state = vm.contentState
+        #expect(state.status == .idle)
+        #expect(state.nozzleTemp == 0)
+        #expect(state.bedTemp == 0)
+        #expect(state.progress == 0)
+    }
+
     // MARK: - Connection
 
     @Test("disconnectAll resets state")

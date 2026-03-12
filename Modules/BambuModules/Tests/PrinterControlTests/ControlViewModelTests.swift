@@ -322,7 +322,7 @@ struct ControlViewModelTests {
         #expect(vm.controlsEnabled == false)
     }
 
-    @Test("Controls re-enabled after print completes")
+    @Test("Controls enabled after print completes")
     func controlsReEnabledAfterComplete() {
         let mock = MockMQTTService()
         let state = PrinterState()
@@ -332,9 +332,19 @@ struct ControlViewModelTests {
         #expect(vm.controlsEnabled == false)
 
         state.gcodeState = "FINISH"
-        // contentState.status is now .completed, not .idle — still disabled
-        // After user clears, printer goes to idle
-        state.gcodeState = "UNKNOWN"
+        #expect(vm.controlsEnabled == true)
+    }
+
+    @Test("Controls enabled after print cancelled")
+    func controlsEnabledAfterCancelled() {
+        let mock = MockMQTTService()
+        let state = PrinterState()
+        state.gcodeState = "RUNNING"
+        let vm = ControlViewModel(mqttService: mock, printerState: state)
+
+        #expect(vm.controlsEnabled == false)
+
+        state.gcodeState = "CANCELLED"
         #expect(vm.controlsEnabled == true)
     }
 

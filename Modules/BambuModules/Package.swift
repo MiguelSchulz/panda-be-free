@@ -16,6 +16,7 @@ let package = Package(
         .package(url: "https://github.com/emqx/CocoaMQTT.git", from: "2.2.1"),
         .package(url: "https://github.com/hmlongco/Navigator.git", from: "2.0.0"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", from: "7.0.0"),
+        .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", from: "1.5.1"),
     ],
     targets: [
         .target(
@@ -32,7 +33,11 @@ let package = Package(
         ),
         .target(
             name: "BambuUI",
-            dependencies: ["BambuModels", "SFSafeSymbols"],
+            dependencies: [
+                "BambuModels",
+                "SFSafeSymbols",
+                .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
+            ],
             resources: [.process("Resources")]
         ),
         .target(
@@ -52,6 +57,7 @@ let package = Package(
                 "BambuUI",
                 "Networking",
                 "SFSafeSymbols",
+                .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
             ],
             resources: [.process("Resources")]
         ),

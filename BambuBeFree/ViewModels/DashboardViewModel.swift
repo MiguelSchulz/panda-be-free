@@ -68,6 +68,10 @@ final class DashboardViewModel {
         mqttConnectionState == .connected
     }
 
+    var hasReceivedInitialData: Bool {
+        printerState.lastUpdated != nil
+    }
+
     var isPrinting: Bool {
         let s = contentState.status
         return s == .printing || s == .preparing
@@ -152,8 +156,10 @@ final class DashboardViewModel {
                     }
                 }
 
-                // Update widget cache with latest state
-                SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: self.printerState)
+                // Update widget cache with latest state (skip placeholder data)
+                if self.printerState.lastUpdated != nil {
+                    SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: self.printerState)
+                }
                 // Reload widgets periodically (debounced to every 30s)
                 if self.lastWidgetReload.map({ Date.now.timeIntervalSince($0) > 30 }) ?? true {
                     self.lastWidgetReload = Date.now

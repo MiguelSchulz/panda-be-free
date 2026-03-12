@@ -15,9 +15,12 @@ public final class ControlViewModel {
     public var showHomingWarning = false
     public var showExtruderTempWarning = false
 
-    /// Controls are only allowed when the printer is idle (not printing, pausing, preparing, etc.)
+    /// Controls are allowed when the printer is idle, or after a print completes/cancels.
     public var controlsEnabled: Bool {
-        printerState.contentState.status == .idle
+        switch printerState.contentState.status {
+        case .idle, .completed, .cancelled: true
+        default: false
+        }
     }
 
     public init(

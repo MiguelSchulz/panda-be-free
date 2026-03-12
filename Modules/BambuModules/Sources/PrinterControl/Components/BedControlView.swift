@@ -8,10 +8,10 @@ struct BedControlView: View {
     var body: some View {
         VStack(spacing: 4) {
             DirectionalButton(systemSymbol: .chevronUp2) {
-                viewModel.jogZ(distance: 10)
+                viewModel.jogZ(distance: -10)
             }
             DirectionalButton(systemSymbol: .chevronUp) {
-                viewModel.jogZ(distance: 1)
+                viewModel.jogZ(distance: -1)
             }
 
             VStack(spacing: 2) {
@@ -25,10 +25,10 @@ struct BedControlView: View {
             .frame(height: 52)
 
             DirectionalButton(systemSymbol: .chevronDown) {
-                viewModel.jogZ(distance: -1)
+                viewModel.jogZ(distance: 1)
             }
             DirectionalButton(systemSymbol: .chevronDown2) {
-                viewModel.jogZ(distance: -10)
+                viewModel.jogZ(distance: 10)
             }
         }
     }

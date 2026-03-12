@@ -72,6 +72,7 @@
       }
     },
     "Connecting to printer..." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -82,6 +83,7 @@
       }
     },
     "Disconnected" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

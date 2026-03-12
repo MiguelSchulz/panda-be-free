@@ -52,17 +52,7 @@ struct AMSWidgetProvider: TimelineProvider {
             return
         }
 
-        // If cache was just written (by app or refresh intent), use it directly
-        if let cached = SharedSettings.cachedPrinterState,
-           Date.now.timeIntervalSince(cached.lastUpdated) < 15
-        {
-            let entry = amsEntry(from: cached)
-            let nextRefresh = Date.now.addingTimeInterval(15 * 60)
-            completion(Timeline(entries: [entry], policy: .after(nextRefresh)))
-            return
-        }
-
-        // Fetch fresh data via MQTT (matches camera widget pattern)
+        // Fetch fresh data via MQTT
         Task {
             let entry: AMSWidgetEntry
             do {

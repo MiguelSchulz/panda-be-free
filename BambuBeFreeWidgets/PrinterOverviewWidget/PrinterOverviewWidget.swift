@@ -85,11 +85,6 @@ struct PrinterOverviewProvider: TimelineProvider {
             }()
 
             async let printResult: PrintHalfState = {
-                if let cached = SharedSettings.cachedPrinterState,
-                   Date.now.timeIntervalSince(cached.lastUpdated) < 15
-                {
-                    return .data(cached.contentState)
-                }
                 do {
                     let snapshot = try await WidgetMQTTService.fetchSnapshot(
                         ip: SharedSettings.printerIP,

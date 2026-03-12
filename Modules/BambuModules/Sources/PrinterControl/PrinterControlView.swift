@@ -2,6 +2,7 @@ import BambuModels
 import BambuUI
 import Networking
 import SFSafeSymbols
+import Shimmer
 import SwiftUI
 
 public struct PrinterControlView: View {
@@ -21,11 +22,15 @@ public struct PrinterControlView: View {
         ))
     }
 
+    private var isLoading: Bool {
+        viewModel.printerState.lastUpdated == nil
+    }
+
     public var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    if !viewModel.controlsEnabled {
+                    if !viewModel.controlsEnabled && !isLoading {
                         Label(
                             "Controls are disabled while the printer is busy.",
                             systemSymbol: .exclamationmarkTriangleFill
@@ -42,6 +47,8 @@ public struct PrinterControlView: View {
                             isLightOn: viewModel.isLightOn,
                             onToggleLight: { viewModel.toggleLight(on: $0) }
                         )
+                        .redacted(reason: isLoading ? .placeholder : [])
+                        .shimmering(active: isLoading)
                     }
 
                     ControlCard(title: "Position", systemSymbol: .move3d) {
@@ -51,11 +58,15 @@ public struct PrinterControlView: View {
                         }
                     }
                     .disabled(!viewModel.controlsEnabled)
+                    .redacted(reason: isLoading ? .placeholder : [])
+                    .shimmering(active: isLoading)
 
                     ControlCard(title: "Extruder", systemSymbol: .arrowDownToLine) {
                         ExtruderControlView(viewModel: viewModel)
                     }
                     .disabled(!viewModel.controlsEnabled)
+                    .redacted(reason: isLoading ? .placeholder : [])
+                    .shimmering(active: isLoading)
                 }
                 .padding()
             }
