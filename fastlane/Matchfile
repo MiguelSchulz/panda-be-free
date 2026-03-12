@@ -1,0 +1,4 @@
+git_url(ENV["MATCH_GIT_URL"])
+storage_mode("git")
+type("appstore")
+app_identifier([ENV["APP_BUNDLE_ID"], "#{ENV['APP_BUNDLE_ID']}.widgets"])

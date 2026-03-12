@@ -1,0 +1,1 @@
+app_identifier(ENV["APP_BUNDLE_ID"])
