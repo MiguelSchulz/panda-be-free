@@ -404,7 +404,6 @@ final class DashboardViewModel {
 
 // MARK: - Preview Helper
 
-#if DEBUG
 extension DashboardViewModel {
     static var preview: DashboardViewModel {
         let vm = DashboardViewModel(mqttService: MockMQTTService())
@@ -446,4 +445,3 @@ extension DashboardViewModel {
         return vm
     }
 }
-#endif
