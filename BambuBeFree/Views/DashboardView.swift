@@ -49,30 +49,7 @@ struct DashboardView: View {
             )
         }
         .onChange(of: scenePhase) { _, newPhase in
-            switch newPhase {
-            case .background:
-                if viewModel.isConnected || viewModel.mqttConnectionState == .connecting {
-                    wasConnected = true
-                    SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: viewModel.printerState)
-                    viewModel.disconnectAll()
-                    WidgetCenter.shared.reloadAllTimelines()
-                }
-            case .active:
-                WidgetCenter.shared.reloadTimelines(ofKind: "PrintStateWidget")
-                WidgetCenter.shared.reloadTimelines(ofKind: "AMSWidget")
-                if wasConnected {
-                    wasConnected = false
-                    Task {
-                        await viewModel.connectAll(
-                            ip: printerIP,
-                            accessCode: accessCode,
-                            printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
-                        )
-                    }
-                }
-            default:
-                break
-            }
+            handleScenePhaseChange(newPhase)
         }
         .fullScreenCover(isPresented: $isFullscreen) {
             FullscreenCameraView(
@@ -81,6 +58,33 @@ struct DashboardView: View {
                 isLightOn: viewModel.chamberLightOn,
                 onToggleLight: viewModel.isConnected ? { viewModel.toggleLight(on: $0) } : nil
             )
+        }
+    }
+
+    private func handleScenePhaseChange(_ newPhase: ScenePhase) {
+        switch newPhase {
+        case .background:
+            if viewModel.isConnected || viewModel.mqttConnectionState == .connecting {
+                wasConnected = true
+                SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: viewModel.printerState)
+                viewModel.disconnectAll()
+                WidgetCenter.shared.reloadAllTimelines()
+            }
+        case .active:
+            WidgetCenter.shared.reloadTimelines(ofKind: "PrintStateWidget")
+            WidgetCenter.shared.reloadTimelines(ofKind: "AMSWidget")
+            if wasConnected {
+                wasConnected = false
+                Task {
+                    await viewModel.connectAll(
+                        ip: printerIP,
+                        accessCode: accessCode,
+                        printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
+                    )
+                }
+            }
+        default:
+            break
         }
     }
 

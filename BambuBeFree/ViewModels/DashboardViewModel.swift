@@ -38,8 +38,9 @@ final class DashboardViewModel {
     var stoppingDryingAmsId: Int?
 
     private let mqttService: any MQTTServiceProtocol
-    private var messageTask: Task<Void, Never>?
-    private var stateTask: Task<Void, Never>?
+    // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
+    nonisolated(unsafe) private var messageTask: Task<Void, Never>?
+    nonisolated(unsafe) private var stateTask: Task<Void, Never>?
     private var streamsStarted = false
     private var lightCommandTime: Date?
     private var airductCommandTime: Date?
@@ -80,6 +81,11 @@ final class DashboardViewModel {
 
     init(mqttService: any MQTTServiceProtocol = BambuMQTTService()) {
         self.mqttService = mqttService
+    }
+
+    deinit {
+        messageTask?.cancel()
+        stateTask?.cancel()
     }
 
     /// Start consuming MQTT streams. Must be called once, before connect.

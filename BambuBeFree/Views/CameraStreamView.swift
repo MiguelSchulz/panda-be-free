@@ -66,24 +66,28 @@ struct CameraStreamView: View {
                 }
             }
             .onChange(of: scenePhase) { _, newPhase in
-                switch newPhase {
-                case .background:
-                    if manager.connectionState == .streaming || manager.connectionState == .connecting {
-                        wasStreaming = true
-                        manager.disconnect()
-                    }
-                case .active:
-                    if wasStreaming, hasConfig {
-                        wasStreaming = false
-                        manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
-                    }
-                default:
-                    break
-                }
+                handleScenePhaseChange(newPhase)
             }
         }
         .fullScreenCover(isPresented: $isFullscreen) {
             FullscreenCameraView(cameraProvider: manager, isPresented: $isFullscreen)
+        }
+    }
+
+    private func handleScenePhaseChange(_ newPhase: ScenePhase) {
+        switch newPhase {
+        case .background:
+            if manager.connectionState == .streaming || manager.connectionState == .connecting {
+                wasStreaming = true
+                manager.disconnect()
+            }
+        case .active:
+            if wasStreaming, hasConfig {
+                wasStreaming = false
+                manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
+            }
+        default:
+            break
         }
     }
 
@@ -145,6 +149,7 @@ struct CameraStreamView: View {
                     .padding(10)
                     .background(.black.opacity(0.5), in: Circle())
             }
+            .accessibilityLabel("Fullscreen")
             .padding(12)
         }
         .toolbar {
@@ -155,6 +160,7 @@ struct CameraStreamView: View {
                 } label: {
                     Image(systemSymbol: .arrowClockwise)
                 }
+                .accessibilityLabel("Refresh")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Reset") {
@@ -171,20 +177,11 @@ struct CameraStreamView: View {
     // MARK: - Error View
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 20) {
-            Image(systemSymbol: .exclamationmarkTriangleFill)
-                .font(.system(size: 48))
-                .foregroundStyle(.red)
-
-            Text("Connection Error")
-                .font(.headline)
-
+        ContentUnavailableView {
+            Label("Connection Error", systemSymbol: .exclamationmarkTriangleFill)
+        } description: {
             Text(message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-
+        } actions: {
             Button("Retry") {
                 manager.connect(ip: printerIP, accessCode: accessCode, printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto)
             }
@@ -199,7 +196,6 @@ struct CameraStreamView: View {
             }
             .buttonStyle(.bordered)
         }
-        .padding()
     }
 }
 

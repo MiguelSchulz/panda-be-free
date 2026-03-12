@@ -70,6 +70,7 @@ public struct CameraCard: View {
                                     .padding(10)
                                     .background(.black.opacity(0.5), in: Circle())
                             }
+                            .accessibilityLabel("Toggle Light")
                         }
                         Spacer()
                         if let onTapFullscreen {
@@ -80,6 +81,7 @@ public struct CameraCard: View {
                                     .padding(10)
                                     .background(.black.opacity(0.5), in: Circle())
                             }
+                            .accessibilityLabel("Fullscreen")
                         }
                     }
                     .padding(12)
@@ -87,12 +89,6 @@ public struct CameraCard: View {
             }
         }
         .zIndex(1)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            if cameraProvider.currentFrame != nil {
-                onTapFullscreen?()
-            }
-        }
     }
 
     private func placeholder(text: LocalizedStringResource) -> some View {

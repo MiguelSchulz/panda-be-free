@@ -66,6 +66,7 @@ public struct AMSTrayView: View {
         }
         .frame(maxWidth: .infinity)
         .contentShape(Rectangle())
+        .accessibilityAddTraits(onTap != nil ? .isButton : [])
         .onTapGesture { onTap?() }
     }
 

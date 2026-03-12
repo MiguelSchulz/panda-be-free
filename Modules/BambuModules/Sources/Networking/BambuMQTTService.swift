@@ -18,13 +18,23 @@ public final class BambuMQTTService: MQTTServiceProtocol, @unchecked Sendable {
     public let messageStream: AsyncStream<BambuMQTTPayload>
 
     public init() {
-        let (stateStream, stateContinuation) = AsyncStream.makeStream(of: MQTTConnectionState.self)
+        let (stateStream, stateContinuation) = AsyncStream.makeStream(
+            of: MQTTConnectionState.self, bufferingPolicy: .bufferingNewest(1)
+        )
         self.stateStream = stateStream
         self.stateContinuation = stateContinuation
+        stateContinuation.onTermination = { _ in
+            print("[MQTT] State stream terminated")
+        }
 
-        let (messageStream, messageContinuation) = AsyncStream.makeStream(of: BambuMQTTPayload.self)
+        let (messageStream, messageContinuation) = AsyncStream.makeStream(
+            of: BambuMQTTPayload.self, bufferingPolicy: .bufferingNewest(64)
+        )
         self.messageStream = messageStream
         self.messageContinuation = messageContinuation
+        messageContinuation.onTermination = { _ in
+            print("[MQTT] Message stream terminated")
+        }
     }
 
     public func connect(ip: String, accessCode: String) {

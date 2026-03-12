@@ -1,6 +1,9 @@
 import BambuModels
 import Foundation
 
+/// MQTT service abstraction for printer communication.
+/// - Note: `stateStream` and `messageStream` are single-consumer `AsyncStream`s.
+///   Only one `for await` loop should read from each stream at a time.
 public protocol MQTTServiceProtocol: AnyObject, Sendable {
     var connectionState: MQTTConnectionState { get }
     var stateStream: AsyncStream<MQTTConnectionState> { get }

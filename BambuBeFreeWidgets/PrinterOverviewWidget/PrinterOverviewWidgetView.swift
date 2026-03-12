@@ -63,20 +63,11 @@ struct PrinterOverviewWidgetView: View {
     }
 
     private func cameraErrorContent(message: String) -> some View {
-        VStack(spacing: 6) {
-            Image(systemSymbol: .cameraFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("Camera Unavailable")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("Camera Unavailable", systemSymbol: .cameraFill)
+        } description: {
             Text(message)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Print State Section
@@ -124,6 +115,7 @@ struct PrinterOverviewWidgetView: View {
                     .padding(.vertical, 4)
                     .background(.fill.quaternary, in: Capsule())
             }
+            .accessibilityLabel("Refresh")
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)
         }
@@ -132,19 +124,11 @@ struct PrinterOverviewWidgetView: View {
     // MARK: - Not Configured
 
     private var notConfiguredView: some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .printerFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No Printer Configured")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("No Printer Configured", systemSymbol: .printerFill)
+        } description: {
             Text("Open Bambu Companion to set up your printer.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 }

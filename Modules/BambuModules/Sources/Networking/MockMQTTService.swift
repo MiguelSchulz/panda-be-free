@@ -12,11 +12,15 @@ public final class MockMQTTService: MQTTServiceProtocol, @unchecked Sendable {
     public let messageStream: AsyncStream<BambuMQTTPayload>
 
     public init() {
-        let (stateStream, stateContinuation) = AsyncStream.makeStream(of: MQTTConnectionState.self)
+        let (stateStream, stateContinuation) = AsyncStream.makeStream(
+            of: MQTTConnectionState.self, bufferingPolicy: .bufferingNewest(1)
+        )
         self.stateStream = stateStream
         self.stateContinuation = stateContinuation
 
-        let (messageStream, messageContinuation) = AsyncStream.makeStream(of: BambuMQTTPayload.self)
+        let (messageStream, messageContinuation) = AsyncStream.makeStream(
+            of: BambuMQTTPayload.self, bufferingPolicy: .bufferingNewest(64)
+        )
         self.messageStream = messageStream
         self.messageContinuation = messageContinuation
     }

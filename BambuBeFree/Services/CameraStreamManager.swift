@@ -28,7 +28,8 @@ final class CameraStreamManager: CameraStreamProviding {
     var currentFrame: UIImage?
 
     private var connection: NWConnection?
-    private var streamTask: Task<Void, Never>?
+    // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
+    nonisolated(unsafe) private var streamTask: Task<Void, Never>?
     private var decompressionSession: VTDecompressionSession?
     private var formatDescription: CMVideoFormatDescription?
     private var spsData: Data?
@@ -47,6 +48,10 @@ final class CameraStreamManager: CameraStreamProviding {
             // Try TCP/6000 first, fall back to RTSP/322
             connectWithAutoDetect(ip: ip, accessCode: accessCode)
         }
+    }
+
+    deinit {
+        streamTask?.cancel()
     }
 
     func disconnect() {
@@ -74,18 +79,14 @@ final class CameraStreamManager: CameraStreamProviding {
             // Try TCP/6000 with a short timeout
             let tcpConnection = await self.tryTLSConnect(host: ip, port: 6000, timeout: 3)
             if let conn = tcpConnection {
-                await MainActor.run {
-                    self.connection = conn
-                }
+                self.connection = conn
                 await self.performTCPStreaming(ip: ip, accessCode: accessCode, connection: conn)
                 return
             }
 
             // Fall back to RTSP/322
             self.logger.info("TCP/6000 unavailable, falling back to RTSP/322")
-            await MainActor.run {
-                self.connectRTSP(ip: ip, accessCode: accessCode)
-            }
+            self.connectRTSP(ip: ip, accessCode: accessCode)
         }
     }
 

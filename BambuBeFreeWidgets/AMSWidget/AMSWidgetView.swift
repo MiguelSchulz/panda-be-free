@@ -92,6 +92,7 @@ struct AMSWidgetView: View {
                         .padding(.vertical, 4)
                         .background(.fill.quaternary, in: Capsule())
                 }
+                .accessibilityLabel("Refresh")
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
             }
@@ -128,18 +129,11 @@ struct AMSWidgetView: View {
     // MARK: - No AMS
 
     private var noAMSView: some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .tray2Fill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No AMS Detected")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("No AMS Detected", systemSymbol: .tray2Fill)
+        } description: {
             Text("No AMS unit connected to your printer.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-
+        } actions: {
             Button(intent: RefreshAMSWidgetIntent()) {
                 Label("Retry", systemSymbol: .arrowClockwise)
                     .font(.caption2)
@@ -147,7 +141,6 @@ struct AMSWidgetView: View {
             .buttonStyle(.bordered)
             .tint(.bambuBrand)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 
@@ -169,19 +162,11 @@ struct AMSWidgetView: View {
     // MARK: - Error
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .tray2Fill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("AMS Unavailable")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("AMS Unavailable", systemSymbol: .tray2Fill)
+        } description: {
             Text(message)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-
+        } actions: {
             Button(intent: RefreshAMSWidgetIntent()) {
                 Label("Retry", systemSymbol: .arrowClockwise)
                     .font(.caption2)
@@ -189,26 +174,17 @@ struct AMSWidgetView: View {
             .buttonStyle(.bordered)
             .tint(.bambuBrand)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 
     // MARK: - Not Configured
 
     private var notConfiguredView: some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .printerFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No Printer Configured")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("No Printer Configured", systemSymbol: .printerFill)
+        } description: {
             Text("Open Bambu Companion to set up your printer.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 }

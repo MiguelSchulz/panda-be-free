@@ -34,6 +34,7 @@ struct JogPadView: View {
                         .frame(width: 52, height: 52)
                         .background(Color(.tertiarySystemGroupedBackground), in: Circle())
                 }
+                .accessibilityLabel("Home All")
                 .buttonStyle(.plain)
 
                 // Right: 1mm then 10mm (inner to outer)

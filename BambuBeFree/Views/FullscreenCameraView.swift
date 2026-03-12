@@ -38,6 +38,7 @@ struct FullscreenCameraView: View {
                             .padding(10)
                             .background(.black.opacity(0.5), in: Circle())
                     }
+                    .accessibilityLabel("Close")
                 }
                 Spacer()
                 if let onToggleLight {
@@ -51,6 +52,7 @@ struct FullscreenCameraView: View {
                                 .padding(10)
                                 .background(.black.opacity(0.5), in: Circle())
                         }
+                        .accessibilityLabel("Toggle Light")
                         Spacer()
                     }
                 }

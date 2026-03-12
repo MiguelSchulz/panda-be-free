@@ -41,6 +41,7 @@ struct PrintStateWidgetView: View {
                         .padding(.vertical, 4)
                         .background(.fill.quaternary, in: Capsule())
                 }
+                .accessibilityLabel("Refresh")
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
             }
@@ -67,19 +68,11 @@ struct PrintStateWidgetView: View {
     // MARK: - Error
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .printerFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("Printer Unavailable")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("Printer Unavailable", systemSymbol: .printerFill)
+        } description: {
             Text(message)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-
+        } actions: {
             Button(intent: RefreshPrintStateWidgetIntent()) {
                 Label("Retry", systemSymbol: .arrowClockwise)
                     .font(.caption2)
@@ -87,26 +80,17 @@ struct PrintStateWidgetView: View {
             .buttonStyle(.bordered)
             .tint(.bambuBrand)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 
     // MARK: - Not Configured
 
     private var notConfiguredView: some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .printerFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No Printer Configured")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("No Printer Configured", systemSymbol: .printerFill)
+        } description: {
             Text("Open Bambu Companion to set up your printer.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 }

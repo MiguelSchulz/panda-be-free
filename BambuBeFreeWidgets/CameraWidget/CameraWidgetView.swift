@@ -45,6 +45,7 @@ struct CameraWidgetView: View {
                             .padding(.vertical, 4)
                             .background(.black.opacity(0.6), in: Capsule())
                     }
+                    .accessibilityLabel("Refresh")
                     .buttonStyle(.plain)
                 }
                 .padding(.bottom, 12)
@@ -71,19 +72,11 @@ struct CameraWidgetView: View {
     // MARK: - Error
 
     private func errorView(message: String) -> some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .cameraFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("Camera Unavailable")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("Camera Unavailable", systemSymbol: .cameraFill)
+        } description: {
             Text(message)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-
+        } actions: {
             Button(intent: RefreshCameraWidgetIntent()) {
                 Label("Retry", systemSymbol: .arrowClockwise)
                     .font(.caption2)
@@ -91,28 +84,17 @@ struct CameraWidgetView: View {
             .buttonStyle(.bordered)
             .tint(.bambuBrand)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 
     // MARK: - Not Configured
 
     private var notConfiguredView: some View {
-        VStack(spacing: 8) {
-            Image(systemSymbol: .printerFill)
-                .font(.title2)
-                .foregroundStyle(.secondary)
-            Text("No Printer Configured")
-                .font(.caption)
-                .fontWeight(.medium)
+        ContentUnavailableView {
+            Label("No Printer Configured", systemSymbol: .printerFill)
+        } description: {
             Text("Open Bambu Companion to set up your printer.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .containerBackground(.background, for: .widget)
     }
 }
