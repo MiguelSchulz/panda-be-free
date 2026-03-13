@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>4</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>BambuBeFree connects to your 3D printer on the local network to capture camera snapshots.</string>
 	<key>NSExtension</key>

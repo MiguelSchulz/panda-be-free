@@ -13,17 +13,24 @@
   <a href="https://testflight.apple.com/join/Tb7w9szg">
     <img src="https://img.shields.io/badge/TestFlight-Join%20Beta-blue?style=for-the-badge&logo=apple" alt="Join TestFlight Beta">
   </a>
+  &nbsp;
+  <a href="https://github.com/sponsors/MiguelSchulz">
+    <img src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor">
+  </a>
 </p>
 
 ---
 
-<p align="center">
-  <img src="Resources/screenshots/onboarding.PNG" width="230" alt="Onboarding">
-  &nbsp;&nbsp;
-  <img src="Resources/screenshots/dashboard.PNG" width="230" alt="Dashboard">
-  &nbsp;&nbsp;
-  <img src="Resources/screenshots/controls.PNG" width="230" alt="Controls">
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><img src="Resources/screenshots/onboarding.PNG" width="230" alt="Onboarding"></td>
+    <td align="center"><img src="Resources/screenshots/dashboard.PNG" width="230" alt="Dashboard"></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="Resources/screenshots/controls.PNG" width="230" alt="Controls"></td>
+    <td align="center"><img src="Resources/screenshots/widgets.png" width="230" alt="Widgets"></td>
+  </tr>
+</table>
 
 ---
 
@@ -69,6 +76,14 @@ The app works great while it's open — real-time updates, live camera, full con
 
 ---
 
+## Support
+
+BambuBeFree is a lot of fun, but also a lot of work. If you enjoy using it, please consider sponsoring the project. This helps a lot to cover costs like Apple Developer Membership, LLM Tokens for faster development, coffee to keep me running, and filament😉
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/MiguelSchulz)
+
+---
+
 ## Building from Source
 
 1. Clone the repository:
@@ -93,6 +108,7 @@ The app works great while it's open — real-time updates, live camera, full con
 5. Follow the in-app onboarding to enter your printer's IP address and access code (found on the printer's touchscreen under Network settings).
 
 ---
+
 
 ## License
 
