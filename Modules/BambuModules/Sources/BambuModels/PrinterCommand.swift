@@ -122,7 +122,7 @@ public enum PrinterCommand {
                 "ams_id": amsId,
                 "temp": temperature,
                 "cooling_temp": 45,
-                "duration": durationMinutes,
+                "duration": durationMinutes / 60,
                 "humidity": 0,
                 "mode": 1,
                 "rotate_tray": rotateTray,

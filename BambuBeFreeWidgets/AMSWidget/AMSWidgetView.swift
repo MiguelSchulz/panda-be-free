@@ -77,12 +77,22 @@ struct AMSWidgetView: View {
             }
             .invalidatableContent()
 
-            // Footer: timestamp + refresh
+            // Footer: timestamp + drying + refresh
             HStack {
-                Text(entry.date, style: .relative)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .invalidatableContent()
+                if unit.isDrying {
+                    Image(systemSymbol: .flameFill)
+                        .foregroundStyle(.orange)
+                        .font(.caption2)
+                    Text("\(unit.dryTimeFormatted) remaining")
+                        .font(.caption2)
+                } else {
+                    Text(entry.date, style: .relative)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .invalidatableContent()
+                }
+
+                Spacer()
 
                 Button(intent: RefreshAMSWidgetIntent()) {
                     Image(systemSymbol: .arrowClockwise)

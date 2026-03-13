@@ -113,7 +113,7 @@ struct PrinterCommandTests {
         #expect(printData?["command"] as? String == "ams_filament_drying")
         #expect(printData?["ams_id"] as? Int == 0)
         #expect(printData?["temp"] as? Int == 55)
-        #expect(printData?["duration"] as? Int == 480)
+        #expect(printData?["duration"] as? Int == 480 / 60)
         #expect(printData?["rotate_tray"] as? Bool == false)
         #expect(printData?["cooling_temp"] as? Int == 45)
         #expect(printData?["mode"] as? Int == 1)

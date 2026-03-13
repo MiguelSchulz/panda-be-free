@@ -46,6 +46,15 @@ public struct AMSUnitSnapshot: Codable, Sendable {
         dryTimeRemaining > 0
     }
 
+    public var dryTimeFormatted: String {
+        let hours = dryTimeRemaining / 60
+        let minutes = dryTimeRemaining % 60
+        if hours > 0 {
+            return String(localized: "\(hours)h \(minutes)m")
+        }
+        return String(localized: "\(minutes)m")
+    }
+
     public init(id: Int, amsTypeName: String? = nil, humidityLevel: Int = 0,
                 humidityRaw: Int = 0, temperature: Double = 0,
                 dryTimeRemaining: Int = 0, trays: [AMSTraySnapshot] = [])
