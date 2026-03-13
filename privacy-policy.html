@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy | BambuBeFree</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f7f9;
+        }
+        .container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #004482; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        h2 { color: #0056a3; margin-top: 30px; }
+        h3 { color: #333; }
+        .footer { margin-top: 50px; font-size: 0.8em; color: #777; text-align: center; }
+        .highlight { background: #e7f3ff; padding: 15px; border-left: 5px solid #0056a3; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Privacy Policy</h1>
+    <p><strong>Last updated: March 13, 2026</strong></p>
+
+    <p>This privacy policy applies to the mobile application <strong>BambuBeFree</strong> (hereinafter referred to as "App"), an open-source 3D printer dashboard for Bambu Lab printers, released under the MIT License.</p>
+
+    <div class="highlight">
+        <strong>In brief:</strong> We protect your privacy. The App operates entirely on your local network. We do not collect, transmit, or store any of your data on external servers. All information stays on your device.
+    </div>
+
+    <h2>1. Data Controller</h2>
+    <p>
+        Miguel Schulz<br>
+        An der Erloeserkirche 24<br>
+        59063 Hamm, Germany<br>
+        Email: <a href="mailto:schulz.miguel@gmail.com">schulz.miguel(at)gmail.com</a>
+    </p>
+
+    <h2>2. Open-Source Software</h2>
+    <p>BambuBeFree is open-source software licensed under the <strong>MIT License</strong>. The complete source code is publicly available on GitHub. You can inspect, audit, and verify every aspect of the App's data handling yourself.</p>
+
+    <h2>3. Collection and Storage of Personal Data</h2>
+
+    <h3>a) Local Storage</h3>
+    <p>Your printer connection details (IP address, access code) and cached printer state are stored exclusively on your device using local storage and shared UserDefaults (for widget functionality). We do not have access to this data. If you delete the App, this local data will also be removed.</p>
+
+    <h3>b) Local Network Communication (MQTT)</h3>
+    <p>The App connects directly to your Bambu Lab printer via MQTT over your local network (LAN). This communication happens entirely within your home network and does not pass through any external servers. The connection uses TLS encryption (port 8883) for secure communication between the App and your printer.</p>
+
+    <h3>c) Camera Stream</h3>
+    <p>If you use the camera preview feature, the video stream is received directly from your printer over your local network. No camera data is transmitted to us or any third party.</p>
+
+    <h3>d) Home Screen Widgets</h3>
+    <p>The App provides Home Screen widgets that display printer status, camera snapshots, and filament information. Widget data is cached locally on your device using a shared app group container. Widgets may briefly connect to your printer on your local network to refresh data.</p>
+
+    <h3>e) App Store</h3>
+    <p>When downloading the App, the App Store operator (Apple) collects data such as username and customer number. This data is not made available to us; we are not responsible for this data collection.</p>
+
+    <h2>4. No Analytics, No Tracking, No Ads</h2>
+    <p>We do not use any analytics services, crash reporting tools, or tracking frameworks. We do not display advertisements and do not share any data with advertising networks or other third parties.</p>
+
+    <h2>5. No Server-Side Components</h2>
+    <p>The App has no backend server, no cloud services, and no external API connections. All functionality operates entirely between the App on your device and your printer on your local network.</p>
+
+    <h2>6. Permissions</h2>
+    <p>The App requires access to your <strong>local network</strong> to communicate with your Bambu Lab printer. No other special permissions (camera, contacts, microphone, location) are requested.</p>
+
+    <h2>7. Your Rights</h2>
+    <p>You have the right to access, restrict, or delete your data. Since we do not maintain user accounts or collect any data externally, you can delete all your local data at any time by uninstalling the App.</p>
+
+    <h2>8. Third-Party Dependencies</h2>
+    <p>The App uses open-source libraries (such as CocoaMQTT for printer communication). These libraries operate locally and do not transmit data to external services. As the source code is publicly available, you can verify this independently.</p>
+
+    <div class="footer">
+        &copy; 2026 BambuBeFree &mdash; Open-source 3D printer dashboard for Bambu Lab printers.
+    </div>
+</div>
+
+</body>
+</html>
