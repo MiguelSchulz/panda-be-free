@@ -38,12 +38,12 @@ platform :ios do
     )
     increment_build_number(
       build_number: current_build + 1,
-      xcodeproj: "BambuBeFree.xcodeproj"
+      xcodeproj: "PandaBeFree.xcodeproj"
     )
 
     build_app(
-      project: "BambuBeFree.xcodeproj",
-      scheme: "BambuBeFree",
+      project: "PandaBeFree.xcodeproj",
+      scheme: "PandaBeFree",
       clean: true,
       export_method: "app-store",
       export_options: {

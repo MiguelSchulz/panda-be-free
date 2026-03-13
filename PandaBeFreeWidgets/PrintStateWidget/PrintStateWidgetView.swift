@@ -1,0 +1,96 @@
+import PandaModels
+import PandaUI
+import SFSafeSymbols
+import SwiftUI
+import WidgetKit
+
+struct PrintStateWidgetView: View {
+    let entry: PrintStateWidgetEntry
+
+    var body: some View {
+        switch entry.state {
+        case let .data(contentState):
+            dataView(state: contentState)
+        case .loading:
+            loadingView
+        case let .error(message):
+            errorView(message: message)
+        case .notConfigured:
+            notConfiguredView
+        }
+    }
+
+    // MARK: - Data
+
+    private func dataView(state: PrinterAttributes.ContentState) -> some View {
+        VStack(spacing: 0) {
+            PrintProgressContent(state: state)
+                .invalidatableContent()
+
+            HStack {
+                Text(entry.date, style: .relative)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .invalidatableContent()
+
+                Button(intent: RefreshPrintStateWidgetIntent()) {
+                    Image(systemSymbol: .arrowClockwise)
+                        .fontWeight(.semibold)
+                        .font(.caption2)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.fill.quaternary, in: Capsule())
+                }
+                .accessibilityLabel("Refresh")
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            }
+            .padding(.top, 4)
+        }
+        .containerBackground(.fill.tertiary, for: .widget)
+    }
+
+    // MARK: - Loading
+
+    private var loadingView: some View {
+        VStack(spacing: 8) {
+            Image(systemSymbol: .printerFill)
+                .font(.largeTitle)
+                .foregroundStyle(.secondary)
+            Text("Loading status...")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .containerBackground(.background, for: .widget)
+    }
+
+    // MARK: - Error
+
+    private func errorView(message: String) -> some View {
+        ContentUnavailableView {
+            Label("Printer Unavailable", systemSymbol: .printerFill)
+        } description: {
+            Text(message)
+        } actions: {
+            Button(intent: RefreshPrintStateWidgetIntent()) {
+                Label("Retry", systemSymbol: .arrowClockwise)
+                    .font(.caption2)
+            }
+            .buttonStyle(.bordered)
+            .tint(.accentColor)
+        }
+        .containerBackground(.background, for: .widget)
+    }
+
+    // MARK: - Not Configured
+
+    private var notConfiguredView: some View {
+        ContentUnavailableView {
+            Label("No Printer Configured", systemSymbol: .printerFill)
+        } description: {
+            Text("Open Panda Companion to set up your printer.")
+        }
+        .containerBackground(.background, for: .widget)
+    }
+}

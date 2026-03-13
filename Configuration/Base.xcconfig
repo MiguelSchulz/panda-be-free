@@ -3,7 +3,7 @@ DEVELOPMENT_TEAM =
 CODE_SIGN_STYLE = Automatic
 CODE_SIGN_IDENTITY = Apple Development
 
-APP_BUNDLE_ID = com.bambubefree.app
+APP_BUNDLE_ID = com.pandabefree.app
 ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor
 APP_GROUP_ID = group.$(APP_BUNDLE_ID)
 

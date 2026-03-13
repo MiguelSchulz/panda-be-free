@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="Resources/screenshots/logo.png" width="128" alt="BambuBeFree logo">
+  <img src="Resources/screenshots/logo.png" width="128" alt="PandaBeFree logo">
 </p>
 
-<h1 align="center">BambuBeFree</h1>
+<h1 align="center">PandaBeFree</h1>
 
 <p align="center">
   A free, open-source 3D printer dashboard for iOS.<br>
@@ -78,7 +78,7 @@ The app works great while it's open — real-time updates, live camera, full con
 
 ## Support
 
-BambuBeFree is a lot of fun, but also a lot of work. If you enjoy using it, please consider sponsoring the project. This helps a lot to cover costs like Apple Developer Membership, LLM Tokens for faster development, coffee to keep me running, and filament😉
+PandaBeFree is a lot of fun, but also a lot of work. If you enjoy using it, please consider sponsoring the project. This helps a lot to cover costs like Apple Developer Membership, LLM Tokens for faster development, coffee to keep me running, and filament😉
 
 [![Sponsor](https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/MiguelSchulz)
 
@@ -88,13 +88,13 @@ BambuBeFree is a lot of fun, but also a lot of work. If you enjoy using it, plea
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/miguelschulz/BambuBeFree.git
-   cd BambuBeFree
+   git clone https://github.com/miguelschulz/PandaBeFree.git
+   cd PandaBeFree
    ```
 
 2. Open the Xcode project:
    ```bash
-   open BambuBeFree.xcodeproj
+   open PandaBeFree.xcodeproj
    ```
 
 3. Set up signing — copy the example config and fill in your Team ID and bundle identifier:

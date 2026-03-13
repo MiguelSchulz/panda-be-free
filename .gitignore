@@ -14,7 +14,7 @@ build
 
 # Credentials & secrets 
 **/Configuration/LocalSigning.xcconfig
-**/BambuBeFree/GoogleService-Info.plist
+**/PandaBeFree/GoogleService-Info.plist
 
 # Fastlane
 fastlane/metadata/
@@ -36,5 +36,5 @@ vendor/bundle/
 *.ipa
 *.dSYM.zip
 *.xcarchive
-/Modules/BambuModules/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-/BambuBeFree.xcodeproj/xcshareddata/xcschemes/BambuBeFree.xcscheme
+/Modules/PandaModules/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+/PandaBeFree.xcodeproj/xcshareddata/xcschemes/PandaBeFree.xcscheme
