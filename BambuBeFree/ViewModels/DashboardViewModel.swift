@@ -40,9 +40,9 @@ final class DashboardViewModel {
     private let mqttService: any MQTTServiceProtocol
     // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
     // swiftformat:disable:next nonisolatedUnsafe
-    @ObservationIgnored nonisolated(unsafe) private var messageTask: Task<Void, Never>?
+    @ObservationIgnored private nonisolated(unsafe) var messageTask: Task<Void, Never>?
     // swiftformat:disable:next nonisolatedUnsafe
-    @ObservationIgnored nonisolated(unsafe) private var stateTask: Task<Void, Never>?
+    @ObservationIgnored private nonisolated(unsafe) var stateTask: Task<Void, Never>?
     private var streamsStarted = false
     private var lightCommandTime: Date?
     private var airductCommandTime: Date?

@@ -57,6 +57,7 @@ let package = Package(
                 "BambuUI",
                 "Networking",
                 "SFSafeSymbols",
+                .product(name: "NavigatorUI", package: "Navigator"),
                 .product(name: "Shimmer", package: "SwiftUI-Shimmer"),
             ],
             resources: [.process("Resources")]

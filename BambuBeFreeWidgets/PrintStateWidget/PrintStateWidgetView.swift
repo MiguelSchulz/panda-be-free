@@ -78,7 +78,7 @@ struct PrintStateWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.bambuBrand)
+            .tint(.accentColor)
         }
         .containerBackground(.background, for: .widget)
     }

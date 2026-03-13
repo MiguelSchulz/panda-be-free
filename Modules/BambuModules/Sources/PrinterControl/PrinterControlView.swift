@@ -1,5 +1,6 @@
 import BambuModels
 import BambuUI
+import NavigatorUI
 import Networking
 import SFSafeSymbols
 import Shimmer
@@ -27,10 +28,10 @@ public struct PrinterControlView: View {
     }
 
     public var body: some View {
-        NavigationStack {
+        ManagedNavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    if !viewModel.controlsEnabled && !isLoading {
+                    if !viewModel.controlsEnabled, !isLoading {
                         Label(
                             "Controls are disabled while the printer is busy.",
                             systemSymbol: .exclamationmarkTriangleFill

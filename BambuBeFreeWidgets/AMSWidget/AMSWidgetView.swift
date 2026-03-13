@@ -149,7 +149,7 @@ struct AMSWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.bambuBrand)
+            .tint(.accentColor)
         }
         .containerBackground(.background, for: .widget)
     }
@@ -182,7 +182,7 @@ struct AMSWidgetView: View {
                     .font(.caption2)
             }
             .buttonStyle(.bordered)
-            .tint(.bambuBrand)
+            .tint(.accentColor)
         }
         .containerBackground(.background, for: .widget)
     }

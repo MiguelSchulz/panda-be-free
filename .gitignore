@@ -36,3 +36,4 @@ vendor/bundle/
 *.ipa
 *.dSYM.zip
 *.xcarchive
+/Modules/BambuModules/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata

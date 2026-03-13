@@ -68,7 +68,7 @@ struct BambuBeFreeApp: App {
                         )
                     }
                     Tab("More", systemImage: SFSymbol.ellipsisCircle.rawValue, value: RootTab.more) {
-                        PlaceholderView()
+                        MoreView()
                     }
                 }
                 .onNavigationReceive(assign: $selectedTab)
@@ -77,19 +77,6 @@ struct BambuBeFreeApp: App {
                     await Self.testMQTTConnection(ip: ip, accessCode: accessCode)
                 }
             }
-        }
-    }
-}
-
-private struct PlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView(
-                "Coming Soon",
-                systemImage: SFSymbol.sparkles.rawValue,
-                description: Text("New features are on the way.")
-            )
-            .navigationTitle("More")
         }
     }
 }

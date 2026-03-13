@@ -9,7 +9,7 @@ import os
 import UIKit
 import VideoToolbox
 
-// CVBuffer is an immutable, thread-safe Core Foundation type.
+/// CVBuffer is an immutable, thread-safe Core Foundation type.
 extension CVBuffer: @retroactive @unchecked Sendable {}
 
 enum CameraConnectionState: Equatable {
@@ -34,7 +34,7 @@ final class CameraStreamManager: CameraStreamProviding {
     private var connection: NWConnection?
     // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
     // swiftformat:disable:next nonisolatedUnsafe
-    @ObservationIgnored nonisolated(unsafe) private var streamTask: Task<Void, Never>?
+    @ObservationIgnored private nonisolated(unsafe) var streamTask: Task<Void, Never>?
     private var decompressionSession: VTDecompressionSession?
     private var formatDescription: CMVideoFormatDescription?
     private var spsData: Data?
