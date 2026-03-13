@@ -13,24 +13,35 @@
   <a href="https://testflight.apple.com/join/Tb7w9szg">
     <img src="https://img.shields.io/badge/TestFlight-Join%20Beta-blue?style=for-the-badge&logo=apple" alt="Join TestFlight Beta">
   </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/MiguelSchulz/panda-be-free/actions/workflows/ci.yml">
+    <img src="https://github.com/MiguelSchulz/panda-be-free/actions/workflows/ci.yml/badge.svg" alt="CI">
+  </a>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Swift-6.0-F05138?style=flat-square&logo=swift&logoColor=white" alt="Swift 6.0">
+  &nbsp;
+  <img src="https://img.shields.io/badge/iOS-18+-000000?style=flat-square&logo=apple&logoColor=white" alt="iOS 18+">
+  &nbsp;
+  <img src="https://img.shields.io/github/license/MiguelSchulz/panda-be-free?style=flat-square" alt="License">
   &nbsp;
   <a href="https://github.com/sponsors/MiguelSchulz">
-    <img src="https://img.shields.io/badge/Sponsor-EA4AAA?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor">
+    <img src="https://img.shields.io/badge/Sponsor-EA4AAA?style=flat-square&logo=githubsponsors&logoColor=white" alt="Sponsor">
   </a>
 </p>
 
 ---
 
-<table align="center">
-  <tr>
-    <td align="center"><img src="Resources/screenshots/onboarding.PNG" width="230" alt="Onboarding"></td>
-    <td align="center"><img src="Resources/screenshots/dashboard.PNG" width="230" alt="Dashboard"></td>
-  </tr>
-  <tr>
-    <td align="center"><img src="Resources/screenshots/controls.PNG" width="230" alt="Controls"></td>
-    <td align="center"><img src="Resources/screenshots/widgets.png" width="230" alt="Widgets"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="Resources/screenshots/onboarding.PNG" width="200" alt="Onboarding">
+  &nbsp;
+  <img src="Resources/screenshots/dashboard.PNG" width="200" alt="Dashboard">
+  &nbsp;
+  <img src="Resources/screenshots/controls.PNG" width="200" alt="Controls">
+  &nbsp;
+  <img src="Resources/screenshots/widgets.png" width="200" alt="Widgets">
+</p>
 
 ---
 

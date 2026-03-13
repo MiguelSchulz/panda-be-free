@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>5</string>
+	<string>6</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>PandaBeFree connects to your 3D printer on the local network to capture camera snapshots.</string>
 	<key>NSExtension</key>

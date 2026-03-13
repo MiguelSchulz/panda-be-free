@@ -16,18 +16,12 @@ platform :ios do
     )
   end
 
-  desc "Build and upload to TestFlight"
-  lane :beta do
+  desc "Increment build number from latest TestFlight build"
+  lane :bump do
     api_key = app_store_connect_api_key(
       key_id: ENV["ASC_KEY_ID"],
       issuer_id: ENV["ASC_ISSUER_ID"],
       key_filepath: ENV["ASC_KEY_PATH"],
-    )
-
-    match(
-      type: "appstore",
-      api_key: api_key,
-      readonly: is_ci
     )
 
     app_id = ENV["APP_BUNDLE_ID"]
@@ -40,6 +34,47 @@ platform :ios do
       build_number: current_build + 1,
       xcodeproj: "PandaBeFree.xcodeproj"
     )
+  end
+
+  desc "Build and upload to TestFlight (without bumping)"
+  lane :release do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_filepath: ENV["ASC_KEY_PATH"],
+    )
+
+    setup_ci if is_ci
+
+    match(
+      type: "appstore",
+      api_key: api_key,
+      readonly: is_ci
+    )
+
+    app_id = ENV["APP_BUNDLE_ID"]
+
+    # Set manual signing per target (update_code_signing_settings
+    # fails with newer Xcode project formats, so use xcodeproj directly)
+    require "xcodeproj"
+    project = Xcodeproj::Project.open("../PandaBeFree.xcodeproj")
+
+    profile_mapping = {
+      "PandaBeFree" => "match AppStore #{app_id}",
+      "PandaBeFreeWidgets" => "match AppStore #{app_id}.widgets",
+    }
+
+    project.targets.each do |target|
+      next unless profile_mapping.key?(target.name)
+      target.build_configurations.each do |config|
+        config.build_settings["CODE_SIGN_STYLE"] = "Manual"
+        config.build_settings["DEVELOPMENT_TEAM"] = ENV["DEVELOPMENT_TEAM"]
+        config.build_settings["CODE_SIGN_IDENTITY"] = "Apple Distribution"
+        config.build_settings["PROVISIONING_PROFILE_SPECIFIER"] = profile_mapping[target.name]
+      end
+    end
+
+    project.save
 
     build_app(
       project: "PandaBeFree.xcodeproj",
@@ -59,5 +94,11 @@ platform :ios do
       api_key: api_key,
       skip_waiting_for_build_processing: true
     )
+  end
+
+  desc "Build and upload to TestFlight (local convenience — bumps + builds)"
+  lane :beta do
+    bump
+    release
   end
 end

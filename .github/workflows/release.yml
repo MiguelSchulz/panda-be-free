@@ -1,0 +1,61 @@
+name: Release to TestFlight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & Upload to TestFlight
+    runs-on: macos-15
+
+    env:
+      APP_BUNDLE_ID: ${{ secrets.APP_BUNDLE_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_KEY_PATH: ${{ github.workspace }}/fastlane/AuthKey.p8
+      MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+      MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+
+      - name: Generate LocalSigning.xcconfig
+        run: |
+          cat > Configuration/LocalSigning.xcconfig << EOF
+          DEVELOPMENT_TEAM = ${{ secrets.DEVELOPMENT_TEAM }}
+          APP_BUNDLE_ID = ${{ secrets.APP_BUNDLE_ID }}
+          EOF
+
+      - name: Write App Store Connect API key
+        run: echo '${{ secrets.ASC_KEY_BASE64 }}' | base64 --decode > "$ASC_KEY_PATH"
+
+      - name: Set up SSH key for Match
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.MATCH_DEPLOY_KEY }}
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Bump build number
+        run: bundle exec fastlane bump
+
+      - name: Commit and push build number
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add PandaBeFree.xcodeproj/project.pbxproj PandaBeFree/Info.plist PandaBeFreeWidgets/Info.plist
+          git diff --cached --quiet && echo "No changes to commit" || (git commit -m "Bump build number [skip ci]" && git push)
+
+      - name: Build and upload to TestFlight
+        run: bundle exec fastlane release
