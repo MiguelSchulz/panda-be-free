@@ -40,6 +40,11 @@ public enum SharedSettings {
         set { sharedDefaults?.set(newValue, forKey: "printerAccessCode") }
     }
 
+    public static var printerSerial: String {
+        get { sharedDefaults?.string(forKey: "printerSerial") ?? "" }
+        set { sharedDefaults?.set(newValue, forKey: "printerSerial") }
+    }
+
     public static var printerType: PrinterType {
         get {
             guard let raw = sharedDefaults?.string(forKey: "printerType"),

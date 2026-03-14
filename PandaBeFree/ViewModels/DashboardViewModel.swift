@@ -214,12 +214,12 @@ final class DashboardViewModel {
     }
 
     /// Connect MQTT and camera. Awaits until MQTT reaches connected/error/timeout.
-    func connectAll(ip: String, accessCode: String, printerType: PrinterType = .auto) async {
+    func connectAll(ip: String, accessCode: String, serial: String, printerType: PrinterType = .auto) async {
         // Set up stream consumers first so no events are missed
         startStreamsIfNeeded()
 
         // Then connect
-        mqttService.connect(ip: ip, accessCode: accessCode)
+        mqttService.connect(ip: ip, accessCode: accessCode, serial: serial)
         cameraManager.connect(ip: ip, accessCode: accessCode, printerType: printerType)
 
         // Wait for connection result (connected, error, or 10s timeout)

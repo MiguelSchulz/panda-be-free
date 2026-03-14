@@ -40,10 +40,16 @@ public final class PandaMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         }
     }
 
-    public func connect(ip: String, accessCode: String) {
+    public func connect(ip: String, accessCode: String, serial: String) {
         disconnect()
 
-        logger.info("Connecting to \(ip):8883...")
+        let hasSerial = !serial.isEmpty
+        if hasSerial {
+            serialNumber = serial
+            publishTopic = "device/\(serial)/request"
+        }
+
+        logger.info("Connecting to \(ip):8883... serial: \(hasSerial ? serial : "(auto-discover)")")
 
         let clientId = "PandaBeFree_\(Int(Date.now.timeIntervalSince1970))"
         let client = CocoaMQTT(clientID: clientId, host: ip, port: 8883)
@@ -67,17 +73,15 @@ public final class PandaMQTTService: MQTTServiceProtocol, @unchecked Sendable {
             completionHandler(true)
         }
 
+        let reportTopic = hasSerial ? "device/\(serial)/report" : "device/+/report"
         delegateHandler.onConnected = { [weak self] mqtt in
-            logger.info("Connected! Subscribing to device/+/report")
+            logger.info("Connected! Subscribing to \(reportTopic)")
             self?.connectionState = .connected
             self?.stateContinuation?.yield(.connected)
-            // Subscribe to all device reports to auto-discover serial number
-            mqtt.subscribe("device/+/report")
-            // If we already know the serial, request full state immediately
-            if let serial = self?.serialNumber, !serial.isEmpty {
-                logger.info("Known serial: \(serial), sending pushAll")
-                self?.publishTopic = "device/\(serial)/request"
+            mqtt.subscribe(reportTopic)
+            if hasSerial {
                 self?.sendCommand(.pushAll)
+                self?.sendCommand(.getVersion)
             }
         }
 
@@ -99,11 +103,10 @@ public final class PandaMQTTService: MQTTServiceProtocol, @unchecked Sendable {
             if self?.serialNumber == nil {
                 let parts = topic.split(separator: "/")
                 if parts.count == 3, parts[0] == "device", parts[2] == "report" {
-                    let serial = String(parts[1])
-                    logger.info("Discovered serial: \(serial)")
-                    self?.serialNumber = serial
-                    self?.publishTopic = "device/\(serial)/request"
-                    // Now that we have serial, request full state and version info
+                    let discovered = String(parts[1])
+                    logger.info("Discovered serial: \(discovered)")
+                    self?.serialNumber = discovered
+                    self?.publishTopic = "device/\(discovered)/request"
                     self?.sendCommand(.pushAll)
                     self?.sendCommand(.getVersion)
                 }

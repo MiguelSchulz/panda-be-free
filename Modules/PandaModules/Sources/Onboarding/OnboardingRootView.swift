@@ -6,7 +6,7 @@ public struct OnboardingRootView: View {
     @State private var viewModel: OnboardingViewModel
 
     public init(
-        connectionTester: @escaping @MainActor (String, String) async -> String? = { _, _ in nil }
+        connectionTester: @escaping @MainActor (String, String, String) async -> String? = { _, _, _ in nil }
     ) {
         _viewModel = State(initialValue: OnboardingViewModel(connectionTester: connectionTester))
     }

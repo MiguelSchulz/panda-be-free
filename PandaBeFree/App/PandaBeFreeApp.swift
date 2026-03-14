@@ -31,10 +31,10 @@ struct PandaBeFreeApp: App {
     }
 
     @MainActor
-    private static func testMQTTConnection(ip: String, accessCode: String) async -> String? {
+    private static func testMQTTConnection(ip: String, accessCode: String, serial: String) async -> String? {
         let service = PandaMQTTService()
         let stream = service.stateStream
-        service.connect(ip: ip, accessCode: accessCode)
+        service.connect(ip: ip, accessCode: accessCode, serial: serial)
         defer { service.disconnect() }
 
         let deadline = Date.now.addingTimeInterval(10)
@@ -73,8 +73,8 @@ struct PandaBeFreeApp: App {
                 }
                 .onNavigationReceive(assign: $selectedTab)
             } else {
-                OnboardingRootView { ip, accessCode in
-                    await Self.testMQTTConnection(ip: ip, accessCode: accessCode)
+                OnboardingRootView { ip, accessCode, serial in
+                    await Self.testMQTTConnection(ip: ip, accessCode: accessCode, serial: serial)
                 }
             }
         }

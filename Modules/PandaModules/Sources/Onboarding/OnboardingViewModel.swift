@@ -6,14 +6,15 @@ import PandaModels
 public final class OnboardingViewModel {
     public var ip = ""
     public var accessCode = ""
+    public var serial = ""
     public var printerTypeRaw = "auto"
     public var isTesting = false
     public var connectionError: String?
 
-    public let connectionTester: @MainActor (String, String) async -> String?
+    public let connectionTester: @MainActor (String, String, String) async -> String?
 
     public init(
-        connectionTester: @escaping @MainActor (String, String) async -> String? = { _, _ in nil }
+        connectionTester: @escaping @MainActor (String, String, String) async -> String? = { _, _, _ in nil }
     ) {
         self.connectionTester = connectionTester
     }
@@ -32,12 +33,13 @@ public final class OnboardingViewModel {
     public func testConnection() async -> Bool {
         let trimmedIP = ip.trimmingCharacters(in: .whitespaces)
         let trimmedCode = accessCode.trimmingCharacters(in: .whitespaces)
+        let trimmedSerial = serial.trimmingCharacters(in: .whitespaces)
 
         connectionError = nil
         isTesting = true
         defer { isTesting = false }
 
-        if let error = await connectionTester(trimmedIP, trimmedCode) {
+        if let error = await connectionTester(trimmedIP, trimmedCode, trimmedSerial) {
             connectionError = error
             return false
         }
@@ -47,6 +49,7 @@ public final class OnboardingViewModel {
     public func saveCredentials() {
         SharedSettings.printerIP = ip.trimmingCharacters(in: .whitespaces)
         SharedSettings.printerAccessCode = accessCode.trimmingCharacters(in: .whitespaces)
+        SharedSettings.printerSerial = serial.trimmingCharacters(in: .whitespaces)
         if let type = PrinterType(rawValue: printerTypeRaw) {
             SharedSettings.printerType = type
         }

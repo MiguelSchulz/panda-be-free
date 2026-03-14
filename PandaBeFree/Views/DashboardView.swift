@@ -11,6 +11,8 @@ struct DashboardView: View {
     private var printerIP = ""
     @AppStorage("printerAccessCode", store: UserDefaults(suiteName: SharedSettings.suiteName))
     private var accessCode = ""
+    @AppStorage("printerSerial", store: UserDefaults(suiteName: SharedSettings.suiteName))
+    private var printerSerial = ""
     @AppStorage("printerType", store: UserDefaults(suiteName: SharedSettings.suiteName))
     private var printerTypeRaw = "auto"
     @Environment(\.scenePhase) private var scenePhase
@@ -41,6 +43,7 @@ struct DashboardView: View {
                                 viewModel.disconnectAll()
                                 printerIP = ""
                                 accessCode = ""
+                                printerSerial = ""
                             }
                             Button("Cancel", role: .cancel) {}
                         } message: {
@@ -53,6 +56,7 @@ struct DashboardView: View {
             await viewModel.connectAll(
                 ip: printerIP,
                 accessCode: accessCode,
+                serial: printerSerial,
                 printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
             )
         }
@@ -80,6 +84,7 @@ struct DashboardView: View {
                     await viewModel.connectAll(
                         ip: printerIP,
                         accessCode: accessCode,
+                        serial: printerSerial,
                         printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
                     )
                 }
@@ -124,6 +129,7 @@ struct DashboardView: View {
                     await viewModel.connectAll(
                         ip: printerIP,
                         accessCode: accessCode,
+                        serial: printerSerial,
                         printerType: PrinterType(rawValue: printerTypeRaw) ?? .auto
                     )
                 }
@@ -176,7 +182,7 @@ struct DashboardView: View {
         .background(Color(.systemGroupedBackground))
         .refreshable {
             viewModel.disconnectAll()
-            async let connect: Void = viewModel.connectAll(ip: printerIP, accessCode: accessCode)
+            async let connect: Void = viewModel.connectAll(ip: printerIP, accessCode: accessCode, serial: printerSerial)
             async let minDelay: Void = { try? await Task.sleep(for: .seconds(1)) }()
             _ = await (connect, minDelay)
         }

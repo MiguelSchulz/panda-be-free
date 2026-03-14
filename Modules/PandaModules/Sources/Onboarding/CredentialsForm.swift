@@ -5,6 +5,7 @@ import SwiftUI
 enum CredentialsField: Hashable {
     case ip
     case accessCode
+    case serial
 }
 
 struct CredentialsForm: View {
@@ -41,9 +42,26 @@ struct CredentialsForm: View {
                     .textContentType(.password)
                     .textFieldStyle(.roundedBorder)
                     .focused(focusedField, equals: .accessCode)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField.wrappedValue = .serial }
+                    .onChange(of: viewModel.accessCode) {
+                        viewModel.connectionError = nil
+                    }
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Serial Number (optional)")
+                    .font(.caption.bold())
+                    .foregroundStyle(.secondary)
+                TextField("e.g. 0309DA561103403", text: $vm.serial)
+                    .autocorrectionDisabled()
+                    .textContentType(.none)
+                    .textInputAutocapitalization(.characters)
+                    .textFieldStyle(.roundedBorder)
+                    .focused(focusedField, equals: .serial)
                     .submitLabel(.done)
                     .onSubmit { focusedField.wrappedValue = nil }
-                    .onChange(of: viewModel.accessCode) {
+                    .onChange(of: viewModel.serial) {
                         viewModel.connectionError = nil
                     }
             }

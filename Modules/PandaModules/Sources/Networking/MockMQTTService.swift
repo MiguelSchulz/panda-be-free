@@ -25,7 +25,7 @@ public final class MockMQTTService: MQTTServiceProtocol, @unchecked Sendable {
         self.messageContinuation = messageContinuation
     }
 
-    public func connect(ip _: String, accessCode _: String) {
+    public func connect(ip _: String, accessCode _: String, serial _: String) {
         connectionState = .connected
         stateContinuation?.yield(.connected)
 

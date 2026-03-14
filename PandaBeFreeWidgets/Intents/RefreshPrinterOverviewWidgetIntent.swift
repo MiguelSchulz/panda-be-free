@@ -11,7 +11,8 @@ struct RefreshPrinterOverviewWidgetIntent: AppIntent {
         if SharedSettings.hasConfiguration {
             if let snapshot = try? await WidgetMQTTService.fetchSnapshot(
                 ip: SharedSettings.printerIP,
-                accessCode: SharedSettings.printerAccessCode
+                accessCode: SharedSettings.printerAccessCode,
+                serial: SharedSettings.printerSerial
             ) {
                 SharedSettings.cachedPrinterState = snapshot
             }
