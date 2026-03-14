@@ -35,7 +35,7 @@ public enum OnboardingStep: Int, CaseIterable, Sendable {
         case .devMode:
             "Developer Mode lets third-party apps like this one control your printer. It only works when LAN Mode is enabled."
         case .credentials:
-            "You'll need your printer's IP address and access code to connect. Here's where to find them."
+            "You'll need your printer's IP address and access code to connect. Some printer models might also require the serial number."
         case .enterCredentials:
             "Enter the IP address and access code you found on your printer."
         case .notifications:
