@@ -100,7 +100,9 @@ struct AMSSection: View {
 
     @ViewBuilder
     private var dryingControls: some View {
-        if amsUnit.isDrying {
+        if amsUnit.amsType?.supportsDrying != true {
+            EmptyView()
+        } else if amsUnit.isDrying {
             HStack {
                 Image(systemSymbol: .flameFill)
                     .foregroundStyle(.orange)

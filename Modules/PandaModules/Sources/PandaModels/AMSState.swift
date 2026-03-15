@@ -7,6 +7,13 @@ public enum AMSType: Sendable {
     case pro // N3F05 — AMS 2 Pro
     case ht // N3S05 — AMS HT (high temperature)
 
+    public var supportsDrying: Bool {
+        switch self {
+        case .standard: false
+        case .pro, .ht: true
+        }
+    }
+
     public var maxDryingTemp: Int {
         switch self {
         case .standard: 55

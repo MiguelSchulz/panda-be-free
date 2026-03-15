@@ -297,6 +297,16 @@ struct AMSTests {
         #expect(AMSType.from(hwVersion: hwVersion) == expected)
     }
 
+    @Test("AMSType.supportsDrying",
+          arguments: [
+              (AMSType.standard, false),
+              (AMSType.pro, true),
+              (AMSType.ht, true),
+          ])
+    func supportsDrying(type: AMSType, expected: Bool) {
+        #expect(type.supportsDrying == expected)
+    }
+
     @Test("AMSType.maxDryingTemp",
           arguments: [
               (AMSType.standard, 55),
