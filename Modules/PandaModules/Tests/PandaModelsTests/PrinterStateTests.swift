@@ -34,14 +34,48 @@ struct PrinterStateTests {
         #expect(state.bedTemp == 59)
     }
 
-    @Test("apply() updates lastUpdated")
-    func lastUpdated() {
+    @Test("apply() sets lastUpdated when payload contains print data")
+    func lastUpdatedWithPrintData() {
         let state = PrinterState()
         #expect(state.lastUpdated == nil)
 
-        state.apply(PandaMQTTPayload())
+        var payload = PandaMQTTPayload()
+        payload.gcodeState = "IDLE"
+        state.apply(payload)
 
         #expect(state.lastUpdated != nil)
+    }
+
+    @Test("apply() does not set lastUpdated for metadata-only payload")
+    func lastUpdatedMetadataOnly() {
+        let state = PrinterState()
+        #expect(state.lastUpdated == nil)
+
+        // Info messages only carry AMS module versions, no print data
+        var payload = PandaMQTTPayload()
+        payload.amsModuleVersions = [AMSModuleVersion(id: 0, hwVer: "AMS08")]
+        state.apply(payload)
+
+        #expect(state.lastUpdated == nil)
+    }
+
+    @Test("apply() always updates lastUpdated after initial data received")
+    func lastUpdatedSubsequentMessages() throws {
+        let state = PrinterState()
+
+        // First message with print data sets lastUpdated
+        var first = PandaMQTTPayload()
+        first.nozzleTemper = 25.0
+        state.apply(first)
+        #expect(state.lastUpdated != nil)
+
+        let firstTimestamp = try #require(state.lastUpdated)
+
+        // Subsequent metadata-only message still updates timestamp
+        var second = PandaMQTTPayload()
+        second.amsModuleVersions = [AMSModuleVersion(id: 0, hwVer: "AMS08")]
+        state.apply(second)
+        #expect(try #require(state.lastUpdated) >= firstTimestamp)
     }
 
     @Test("apply() heatbreak fan ignores small changes")

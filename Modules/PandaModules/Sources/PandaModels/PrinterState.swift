@@ -170,6 +170,17 @@ public final class PrinterState {
             }
         }
 
-        lastUpdated = Date.now
+        // Only mark initial data as received when the payload contains actual
+        // printer state (temperatures, status, progress) — not just metadata like
+        // AMS module versions. Once initial data has arrived, every subsequent
+        // message keeps the timestamp fresh.
+        let hasPrintData = payload.gcodeState != nil
+            || payload.nozzleTemper != nil
+            || payload.bedTemper != nil
+            || payload.mcPercent != nil
+            || payload.stgCur != nil
+        if hasPrintData || lastUpdated != nil {
+            lastUpdated = Date.now
+        }
     }
 }
