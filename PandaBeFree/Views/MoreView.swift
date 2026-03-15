@@ -6,6 +6,7 @@ import SwiftUI
 nonisolated enum MoreDestinations: NavigationDestination {
     case dependencies
     case notifications
+    case liveActivity
     case sessionLog
 
     var body: some View {
@@ -14,6 +15,8 @@ nonisolated enum MoreDestinations: NavigationDestination {
             DependenciesView()
         case .notifications:
             NotificationSettingsView()
+        case .liveActivity:
+            LiveActivitySettingsView()
         case .sessionLog:
             SessionLogView()
         }
@@ -31,6 +34,10 @@ struct MoreView: View {
                 Section {
                     NavigationLink(to: MoreDestinations.notifications) {
                         Label("Notifications", systemSymbol: .bellFill)
+                    }
+
+                    NavigationLink(to: MoreDestinations.liveActivity) {
+                        Label("Live Activity", systemSymbol: .timerCircleFill)
                     }
 
                     NavigationLink(to: MoreDestinations.sessionLog) {

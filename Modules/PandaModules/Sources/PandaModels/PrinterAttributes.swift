@@ -1,3 +1,4 @@
+import ActivityKit
 import Foundation
 import SFSafeSymbols
 import SwiftUI
@@ -18,8 +19,8 @@ public enum PrinterStatus: String, Codable, Hashable, Sendable {
 // MARK: - Printer Attributes
 
 /// Shared data model for printer state display.
-/// Used by the main app, widgets, and cached state snapshots.
-public struct PrinterAttributes: Sendable {
+/// Used by the main app, widgets, Live Activity, and cached state snapshots.
+public struct PrinterAttributes: ActivityAttributes, Sendable {
     public var printerName: String
 
     public init(printerName: String) {

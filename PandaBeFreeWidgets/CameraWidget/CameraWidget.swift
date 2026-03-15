@@ -1,5 +1,7 @@
+import ActivityKit
 import Networking
 import PandaModels
+import PandaNotifications
 import SwiftUI
 import WidgetKit
 
@@ -77,6 +79,12 @@ struct CameraWidgetProvider: TimelineProvider {
                         isLightOn: lightOn
                     )
                 }
+            }
+
+            // Update Live Activity from cached printer state
+            if let cached = SharedSettings.cachedPrinterState {
+                await LiveActivityManager.shared.update(contentState: cached.contentState)
+                await LiveActivityManager.shared.endIfNeeded(contentState: cached.contentState)
             }
 
             let nextRefresh = Date.now.addingTimeInterval(15 * 60)

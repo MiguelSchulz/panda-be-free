@@ -53,7 +53,8 @@
 - **Printer Controls** — pause, resume, stop, speed profiles, light toggle, temperature adjustment, fan control, and airduct mode
 - **Home Screen Widgets** — camera snapshot, print progress, and AMS status at a glance
 - **Fully Local** — your data never leaves your network
-- **Notifications** — the app estimated when your print or AMS drying finishes and schedules a notification. Having at least one widget on the homescreen can greatly improve the accuracy of notifications, as they provide additonal background computing time
+- **Live Activity** — print progress on your Lock Screen and Dynamic Island with an auto-filling progress bar, countdown timer, and estimated finish time
+- **Notifications** — get notified when your print or AMS drying finishes
 - **Localized** — available in English and German
 
 ## Requirements
@@ -63,28 +64,30 @@
 
 ---
 
-## Notifications
+## Notifications & Live Activity
 
-PandaBeFree supports local push notifications to let you know when your print or AMS drying finishes. Since the app connects directly to your printer over LAN (no server involved), these notifications are **estimated locally** rather than pushed from a backend.
+PandaBeFree supports **local notifications** (print finished, drying finished) and a **Live Activity** that shows print progress on your Lock Screen and Dynamic Island. Since the app connects directly to your printer over LAN — no server involved — all of this works locally.
 
-Here's how it works:
+### How it works
 
-- The app calculates the estimated completion time based on the latest data from your printer and schedules a local notification.
-- Every time the app gets a chance to run — when you open it, when a widget refreshes in the background, etc. — it updates the estimate to keep it as accurate as possible.
-- **Adding at least one Home Screen widget** can significantly improve notification reliability, as widgets give iOS more reasons to grant the app background execution time for updating estimates.
+- **While the app is open**, it receives real-time data from your printer via MQTT and keeps everything up to date.
+- **In the background**, iOS doesn't allow persistent connections. The app estimates completion times, schedules notifications, and updates the Live Activity whenever it gets a chance to run — when you open it, when a widget refreshes, or during occasional background tasks.
+- **The Live Activity** shows an auto-filling progress bar, a countdown timer, and an estimated finish time. The progress bar and countdown continue smoothly even without updates, based on the last known state. After about 2 minutes without fresh data, a "stale" indicator appears.
 
-Because iOS doesn't allow apps to maintain persistent background connections (like MQTT), the app can't continuously listen for real-time printer updates. This means notifications may occasionally be slightly early or late depending on how recently the app was able to refresh. Widgets help bridge this gap.
+### Tips for the best experience
 
-### Why not remote push notifications or Live Activities?
+- **Add at least one Home Screen widget.** Widgets give iOS more reasons to grant the app background execution time — every widget refresh also updates the Live Activity and notification estimates.
+- **Open the app regularly** during a print, even briefly. Every time the app connects to your printer, the Live Activity, countdown, and notifications are refreshed with accurate data.
+- **Use the app for printer actions** (pause, resume, speed changes, etc.) instead of other tools — each interaction is an opportunity to sync fresh data.
 
-Both remote push notifications and Live Activities require Apple Push Notification service (APNs) — a server-to-Apple-to-device pipeline where a backend pushes updates through Apple's servers to your phone. The server authenticates using a `.p8` key tied to the developer's Apple Developer account, which is a secret that cannot be shared or published.
+### Why not a server?
 
-For a LAN-connected printer, there's no good way to add a server:
+Server-pushed updates (via APNs) would keep everything perfectly in sync, but they're not compatible with the open-source, local-only model:
 
 - A **centralized server** would need access to each user's local network and printer credentials — breaking the local-only model.
-- A **self-hosted server** solves LAN access but can't send APNs notifications without the developer's `.p8` key.
+- A **self-hosted server** solves LAN access but can't send APNs notifications without the developer's `.p8` key, a secret tied to the Apple Developer account that cannot be published.
 
-Until there's a way around these constraints, remote push notifications and Live Activities aren't feasible without server infrastructure that conflicts with the local-only, open-source model.
+The local approach means updates depend on when iOS gives the app execution time, but it keeps your data entirely on your network with zero external dependencies.
 
 ---
 

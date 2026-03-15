@@ -1,5 +1,7 @@
+import ActivityKit
 import Networking
 import PandaModels
+import PandaNotifications
 import SwiftUI
 import WidgetKit
 
@@ -103,6 +105,12 @@ struct PrinterOverviewProvider: TimelineProvider {
 
             let cameraState = await cameraResult
             let printState = await printResult
+
+            // Update Live Activity with latest printer state
+            if let cached = SharedSettings.cachedPrinterState {
+                await LiveActivityManager.shared.update(contentState: cached.contentState)
+                await LiveActivityManager.shared.endIfNeeded(contentState: cached.contentState)
+            }
 
             let lightOn = SharedSettings.cachedPrinterState?.chamberLightOn ?? false
             let entry = PrinterOverviewEntry(date: .now, cameraState: cameraState, printState: printState, isLightOn: lightOn)

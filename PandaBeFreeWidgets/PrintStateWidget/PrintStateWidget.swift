@@ -1,3 +1,4 @@
+import ActivityKit
 import Networking
 import PandaModels
 import PandaNotifications
@@ -63,6 +64,8 @@ struct PrintStateWidgetProvider: TimelineProvider {
                     amsUnits: snapshot.amsUnits
                 )
                 await LocalNotificationScheduler.shared.execute(actions)
+                await LiveActivityManager.shared.update(contentState: snapshot.contentState)
+                await LiveActivityManager.shared.endIfNeeded(contentState: snapshot.contentState)
                 entry = PrintStateWidgetEntry(date: .now, state: .data(snapshot.contentState))
             } catch {
                 // Fall back to stale cache if available

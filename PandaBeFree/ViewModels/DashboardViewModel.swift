@@ -63,6 +63,7 @@ final class DashboardViewModel {
 
     private let mqttService: any MQTTServiceProtocol
     private let notificationScheduler: any NotificationScheduling
+    private let liveActivityManager: any LiveActivityManaging
     private var wasConnected = false
     // nonisolated(unsafe) allows cancellation from deinit; Task.cancel() is thread-safe.
     // swiftformat:disable:next nonisolatedUnsafe
@@ -116,10 +117,12 @@ final class DashboardViewModel {
 
     init(
         mqttService: any MQTTServiceProtocol = PandaMQTTService(),
-        notificationScheduler: any NotificationScheduling = LocalNotificationScheduler.shared
+        notificationScheduler: any NotificationScheduling = LocalNotificationScheduler.shared,
+        liveActivityManager: any LiveActivityManaging = LiveActivityManager.shared
     ) {
         self.mqttService = mqttService
         self.notificationScheduler = notificationScheduler
+        self.liveActivityManager = liveActivityManager
     }
 
     deinit {
@@ -239,6 +242,18 @@ final class DashboardViewModel {
                     WidgetCenter.shared.reloadTimelines(ofKind: "PrintStateWidget")
                     WidgetCenter.shared.reloadTimelines(ofKind: "AMSWidget")
                 }
+
+                // Update Live Activity
+                if self.printerState.lastUpdated != nil {
+                    let cs = self.printerState.contentState
+                    let printerName = SharedSettings.printerModel?.displayName ?? "3D Printer"
+                    let lam = self.liveActivityManager
+                    Task {
+                        await lam.startIfNeeded(contentState: cs, printerName: printerName)
+                        await lam.update(contentState: cs)
+                        await lam.endIfNeeded(contentState: cs)
+                    }
+                }
             }
         }
 
@@ -323,22 +338,33 @@ final class DashboardViewModel {
                 wasConnected = true
                 if hasReceivedInitialData {
                     SharedSettings.cachedPrinterState = PrinterStateSnapshot(from: printerState)
+                    // Final Live Activity update before losing MQTT
+                    let cs = printerState.contentState
+                    let lam = liveActivityManager
+                    Task { await lam.update(contentState: cs) }
                 }
                 disconnectAll()
                 WidgetCenter.shared.reloadAllTimelines()
+                // Schedule background refresh for Live Activity updates
+                if liveActivityManager.isActivityActive {
+                    AppDelegate.scheduleLiveActivityRefresh()
+                }
             }
         case .active:
             appLog(.info, category: logCategory, "Scene phase → active (wasConnected: \(wasConnected))")
             WidgetCenter.shared.reloadTimelines(ofKind: "PrintStateWidget")
             WidgetCenter.shared.reloadTimelines(ofKind: "AMSWidget")
-            // Reconcile notifications from cached state before MQTT reconnects
+            // Reconcile notifications and Live Activity from cached state before MQTT reconnects
             if let cached = SharedSettings.cachedPrinterState {
+                let lam = liveActivityManager
+                let scheduler = notificationScheduler
                 Task {
                     let actions = NotificationEvaluator.evaluate(
                         contentState: cached.contentState,
                         amsUnits: cached.amsUnits
                     )
-                    await notificationScheduler.execute(actions)
+                    await scheduler.execute(actions)
+                    await lam.update(contentState: cached.contentState)
                 }
             }
             if wasConnected {

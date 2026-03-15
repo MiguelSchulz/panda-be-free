@@ -1,3 +1,4 @@
+import ActivityKit
 import Networking
 import PandaModels
 import PandaNotifications
@@ -68,6 +69,8 @@ struct AMSWidgetProvider: TimelineProvider {
                     amsUnits: snapshot.amsUnits
                 )
                 await LocalNotificationScheduler.shared.execute(actions)
+                await LiveActivityManager.shared.update(contentState: snapshot.contentState)
+                await LiveActivityManager.shared.endIfNeeded(contentState: snapshot.contentState)
                 entry = amsEntry(from: snapshot)
             } catch {
                 // Fall back to stale cache if available

@@ -8,5 +8,6 @@ struct PandaBeFreeWidgets: WidgetBundle {
         PrintStateWidget()
         AMSWidget()
         PrinterOverviewWidget()
+        PrinterLiveActivity()
     }
 }
