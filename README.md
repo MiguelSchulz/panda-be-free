@@ -63,20 +63,28 @@
 
 ---
 
-## Limitations
+## Notifications
 
-### No push notifications or Live Activities
+PandaBeFree supports local push notifications to let you know when your print or AMS drying finishes. Since the app connects directly to your printer over LAN (no server involved), these notifications are **estimated locally** rather than pushed from a backend.
 
-iOS push notifications and Live Activities both require Apple Push Notification service (APNs) — a server-to-Apple-to-device pipeline where a backend sends updates through Apple's servers to your phone. The server authenticates using a `.p8` key tied to the developer's Apple Developer account. This key is a secret that cannot be shared or published.
+Here's how it works:
 
-iOS also does not allow apps to maintain persistent background connections (like MQTT), so the app can't just keep listening on its own.
+- The app calculates the estimated completion time based on the latest data from your printer and schedules a local notification.
+- Every time the app gets a chance to run — when you open it, when a widget refreshes in the background, etc. — it updates the estimate to keep it as accurate as possible.
+- **Adding at least one Home Screen widget** can significantly improve notification reliability, as widgets give iOS more reasons to grant the app background execution time for updating estimates.
+
+Because iOS doesn't allow apps to maintain persistent background connections (like MQTT), the app can't continuously listen for real-time printer updates. This means notifications may occasionally be slightly early or late depending on how recently the app was able to refresh. Widgets help bridge this gap.
+
+### Why not remote push notifications or Live Activities?
+
+Both remote push notifications and Live Activities require Apple Push Notification service (APNs) — a server-to-Apple-to-device pipeline where a backend pushes updates through Apple's servers to your phone. The server authenticates using a `.p8` key tied to the developer's Apple Developer account, which is a secret that cannot be shared or published.
 
 For a LAN-connected printer, there's no good way to add a server:
 
 - A **centralized server** would need access to each user's local network and printer credentials — breaking the local-only model.
 - A **self-hosted server** solves LAN access but can't send APNs notifications without the developer's `.p8` key.
 
-The app works great while it's open — real-time updates, live camera, full control — but background notifications aren't feasible without server infrastructure that conflicts with the local-only, open-source model.
+Until there's a way around these constraints, remote push notifications and Live Activities aren't feasible without server infrastructure that conflicts with the local-only, open-source model.
 
 ---
 
