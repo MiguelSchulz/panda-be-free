@@ -8,7 +8,7 @@ struct AMSSection: View {
     let amsUnit: AMSUnit
 
     private var headerLabel: String {
-        let name = amsUnit.amsType.map { String(localized: $0.displayName) } ?? String(localized: "AMS")
+        let name = amsUnit.amsType?.displayName ?? "AMS"
         if viewModel.printerState.amsUnits.count > 1 {
             return "\(name) \(amsUnit.id + 1)"
         }
@@ -56,7 +56,7 @@ struct AMSSection: View {
                 Image(systemSymbol: .thermometerMedium)
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                Text("\(Int(amsUnit.temperature.rounded()))\u{00B0}C")
+                Text(verbatim: "\(Int(amsUnit.temperature.rounded()))°C")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

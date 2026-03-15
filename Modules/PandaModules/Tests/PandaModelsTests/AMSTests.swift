@@ -310,8 +310,7 @@ struct AMSTests {
     @Test("AMSType.displayName is non-empty",
           arguments: [AMSType.standard, AMSType.pro, AMSType.ht])
     func displayNameNonEmpty(type: AMSType) {
-        let name = String(localized: type.displayName)
-        #expect(!name.isEmpty)
+        #expect(!type.displayName.isEmpty)
     }
 
     @Test("Color.hexRRGGBBAA round-trips with parseColor")

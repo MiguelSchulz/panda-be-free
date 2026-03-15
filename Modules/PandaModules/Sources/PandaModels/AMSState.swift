@@ -15,7 +15,7 @@ public enum AMSType: Sendable {
         }
     }
 
-    public var displayName: LocalizedStringResource {
+    public var displayName: String {
         switch self {
         case .standard: "AMS"
         case .pro: "AMS 2 Pro"

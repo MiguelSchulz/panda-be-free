@@ -1,78 +1,6 @@
 import Foundation
 
 public enum PreparationStages {
-    // MARK: - Stage Names (stg_cur → human-readable)
-
-    private static let stageNames: [Int: LocalizedStringResource] = [
-        1: "Auto bed leveling",
-        2: "Preheating heatbed",
-        3: "Vibration compensation",
-        4: "Changing filament",
-        5: "M400 pause",
-        6: "Filament runout pause",
-        7: "Heating hotend",
-        8: "Calibrating extrusion",
-        9: "Scanning bed surface",
-        10: "Inspecting first layer",
-        11: "Identifying build plate",
-        12: "Calibrating micro lidar",
-        13: "Homing toolhead",
-        14: "Cleaning nozzle tip",
-        15: "Checking extruder temp",
-        16: "Paused by user",
-        17: "Front cover falling",
-        18: "Calibrating micro lidar",
-        19: "Calibrating extrusion flow",
-        20: "Nozzle temp malfunction",
-        21: "Heatbed temp malfunction",
-        22: "Filament unloading",
-        23: "Paused: skipped step",
-        24: "Filament loading",
-        25: "Calibrating motor noise",
-        26: "Paused: AMS lost",
-        27: "Paused: low fan speed",
-        28: "Chamber temp control error",
-        29: "Cooling chamber",
-        30: "Paused by G-code",
-        31: "Motor noise calibration",
-        32: "Paused: nozzle filament covered",
-        33: "Paused: cutter error",
-        34: "Paused: first layer error",
-        35: "Paused: nozzle clog",
-        36: "Checking absolute accuracy",
-        37: "Absolute accuracy calibration",
-        38: "Checking absolute accuracy",
-        39: "Calibrating nozzle offset",
-        40: "Bed leveling (high temp)",
-        41: "Checking quick release",
-        42: "Checking door and cover",
-        43: "Laser calibration",
-        44: "Checking platform",
-        45: "Checking camera position",
-        46: "Calibrating camera",
-        47: "Bed leveling phase 1",
-        48: "Bed leveling phase 2",
-        49: "Heating chamber",
-        50: "Cooling heatbed",
-        51: "Printing calibration lines",
-        52: "Checking material",
-        53: "Live view camera calibration",
-        54: "Waiting for heatbed temp",
-        55: "Checking material position",
-        56: "Cutting module offset calibration",
-        57: "Measuring surface",
-        58: "Thermal preconditioning",
-        59: "Homing blade holder",
-        60: "Calibrating camera offset",
-        61: "Calibrating blade holder",
-        62: "Hotend pick and place test",
-        63: "Waiting for chamber temp",
-        64: "Preparing hotend",
-        65: "Calibrating nozzle clump detection",
-        66: "Purifying chamber air",
-        77: "Preparing AMS",
-    ]
-
     // MARK: - Stage Categories
 
     public enum Category: String, Sendable {
@@ -83,39 +11,102 @@ public enum PreparationStages {
         case issue
     }
 
-    private static let stageCategories: [Int: Category] = [
-        // prepare — normal pre-print setup
-        1: .prepare, 2: .prepare, 3: .prepare, 7: .prepare, 9: .prepare,
-        11: .prepare, 13: .prepare, 14: .prepare, 15: .prepare, 29: .prepare,
-        40: .prepare, 41: .prepare, 42: .prepare, 47: .prepare, 48: .prepare,
-        49: .prepare, 50: .prepare, 51: .prepare, 52: .prepare, 54: .prepare,
-        55: .prepare, 57: .prepare, 58: .prepare, 59: .prepare, 63: .prepare,
-        64: .prepare, 66: .prepare, 77: .prepare,
-        // calibrate — calibration/scanning steps
-        8: .calibrate, 10: .calibrate, 12: .calibrate, 18: .calibrate,
-        19: .calibrate, 25: .calibrate, 31: .calibrate, 36: .calibrate,
-        37: .calibrate, 38: .calibrate, 39: .calibrate, 43: .calibrate,
-        44: .calibrate, 45: .calibrate, 46: .calibrate, 53: .calibrate,
-        56: .calibrate, 60: .calibrate, 61: .calibrate, 62: .calibrate,
-        65: .calibrate,
-        // paused — expected interruptions
-        5: .paused, 16: .paused, 30: .paused,
-        // filament — filament operations
-        4: .filament, 22: .filament, 24: .filament,
-        // issue — errors/malfunctions
-        6: .issue, 17: .issue, 20: .issue, 21: .issue, 23: .issue,
-        26: .issue, 27: .issue, 28: .issue, 32: .issue, 33: .issue,
-        34: .issue, 35: .issue,
-    ]
-
     // MARK: - Public API
 
     public static func name(for stgCur: Int) -> String? {
-        stageNames[stgCur].map { String(localized: $0) }
+        switch stgCur {
+        case 1: String(localized: "Auto bed leveling")
+        case 2: String(localized: "Preheating heatbed")
+        case 3: String(localized: "Vibration compensation")
+        case 4: String(localized: "Changing filament")
+        case 5: String(localized: "M400 pause")
+        case 6: String(localized: "Filament runout pause")
+        case 7: String(localized: "Heating hotend")
+        case 8: String(localized: "Calibrating extrusion")
+        case 9: String(localized: "Scanning bed surface")
+        case 10: String(localized: "Inspecting first layer")
+        case 11: String(localized: "Identifying build plate")
+        case 12, 18: String(localized: "Calibrating micro lidar")
+        case 13: String(localized: "Homing toolhead")
+        case 14: String(localized: "Cleaning nozzle tip")
+        case 15: String(localized: "Checking extruder temp")
+        case 16: String(localized: "Paused by user")
+        case 17: String(localized: "Front cover falling")
+        case 19: String(localized: "Calibrating extrusion flow")
+        case 20: String(localized: "Nozzle temp malfunction")
+        case 21: String(localized: "Heatbed temp malfunction")
+        case 22: String(localized: "Filament unloading")
+        case 23: String(localized: "Paused: skipped step")
+        case 24: String(localized: "Filament loading")
+        case 25: String(localized: "Calibrating motor noise")
+        case 26: String(localized: "Paused: AMS lost")
+        case 27: String(localized: "Paused: low fan speed")
+        case 28: String(localized: "Chamber temp control error")
+        case 29: String(localized: "Cooling chamber")
+        case 30: String(localized: "Paused by G-code")
+        case 31: String(localized: "Motor noise calibration")
+        case 32: String(localized: "Paused: nozzle filament covered")
+        case 33: String(localized: "Paused: cutter error")
+        case 34: String(localized: "Paused: first layer error")
+        case 35: String(localized: "Paused: nozzle clog")
+        case 36, 38: String(localized: "Checking absolute accuracy")
+        case 37: String(localized: "Absolute accuracy calibration")
+        case 39: String(localized: "Calibrating nozzle offset")
+        case 40: String(localized: "Bed leveling (high temp)")
+        case 41: String(localized: "Checking quick release")
+        case 42: String(localized: "Checking door and cover")
+        case 43: String(localized: "Laser calibration")
+        case 44: String(localized: "Checking platform")
+        case 45: String(localized: "Checking camera position")
+        case 46: String(localized: "Calibrating camera")
+        case 47: String(localized: "Bed leveling phase 1")
+        case 48: String(localized: "Bed leveling phase 2")
+        case 49: String(localized: "Heating chamber")
+        case 50: String(localized: "Cooling heatbed")
+        case 51: String(localized: "Printing calibration lines")
+        case 52: String(localized: "Checking material")
+        case 53: String(localized: "Live view camera calibration")
+        case 54: String(localized: "Waiting for heatbed temp")
+        case 55: String(localized: "Checking material position")
+        case 56: String(localized: "Cutting module offset calibration")
+        case 57: String(localized: "Measuring surface")
+        case 58: String(localized: "Thermal preconditioning")
+        case 59: String(localized: "Homing blade holder")
+        case 60: String(localized: "Calibrating camera offset")
+        case 61: String(localized: "Calibrating blade holder")
+        case 62: String(localized: "Hotend pick and place test")
+        case 63: String(localized: "Waiting for chamber temp")
+        case 64: String(localized: "Preparing hotend")
+        case 65: String(localized: "Calibrating nozzle clump detection")
+        case 66: String(localized: "Purifying chamber air")
+        case 77: String(localized: "Preparing AMS")
+        default: nil
+        }
     }
 
     public static func category(for stgCur: Int) -> Category? {
-        stageCategories[stgCur]
+        switch stgCur {
+        // prepare — normal pre-print setup
+        case 1, 2, 3, 7, 9, 11, 13, 14, 15, 29,
+             40, 41, 42, 47, 48, 49, 50, 51, 52, 54,
+             55, 57, 58, 59, 63, 64, 66, 77:
+            .prepare
+        // calibrate — calibration/scanning steps
+        case 8, 10, 12, 18, 19, 25, 31, 36, 37, 38,
+             39, 43, 44, 45, 46, 53, 56, 60, 61, 62, 65:
+            .calibrate
+        // paused — expected interruptions
+        case 5, 16, 30:
+            .paused
+        // filament — filament operations
+        case 4, 22, 24:
+            .filament
+        // issue — errors/malfunctions
+        case 6, 17, 20, 21, 23, 26, 27, 28, 32, 33, 34, 35:
+            .issue
+        default:
+            nil
+        }
     }
 
     /// Determine printer status and stage category from gcode state, stg_cur, and layer number.
@@ -133,12 +124,12 @@ public enum PreparationStages {
         }
 
         if gcodeState == "PAUSE" {
-            let cat = stageCategories[stgCur]
+            let cat = category(for: stgCur)
             return (.paused, cat?.rawValue ?? "paused")
         }
 
-        let cat = stageCategories[stgCur]
-        let stageName = stageNames[stgCur]
+        let cat = category(for: stgCur)
+        let hasName = name(for: stgCur) != nil
 
         // Pauses and issues are always interruptions
         if cat == .paused || cat == .issue {
@@ -148,7 +139,7 @@ public enum PreparationStages {
 
         // Prep/calibration/filament: use layer_num to determine context
         if cat == .prepare || cat == .calibrate || cat == .filament {
-            if gcodeState == "PREPARE" || ((gcodeState == "RUNNING" || gcodeState == "PRINTING") && stageName != nil) {
+            if gcodeState == "PREPARE" || ((gcodeState == "RUNNING" || gcodeState == "PRINTING") && hasName) {
                 if layerNum >= 1 {
                     return (.paused, cat?.rawValue)
                 } else {
