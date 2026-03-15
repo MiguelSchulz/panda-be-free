@@ -88,7 +88,8 @@ struct PrinterOverviewProvider: TimelineProvider {
                 do {
                     let snapshot = try await WidgetMQTTService.fetchSnapshot(
                         ip: SharedSettings.printerIP,
-                        accessCode: SharedSettings.printerAccessCode
+                        accessCode: SharedSettings.printerAccessCode,
+                        serial: SharedSettings.printerSerial
                     )
                     SharedSettings.cachedPrinterState = snapshot
                     return .data(snapshot.contentState)

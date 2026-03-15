@@ -22,7 +22,8 @@ struct ToggleLightIntent: AppIntent {
         try? await WidgetMQTTService.sendCommand(
             .chamberLight(on: newState),
             ip: SharedSettings.printerIP,
-            accessCode: SharedSettings.printerAccessCode
+            accessCode: SharedSettings.printerAccessCode,
+            serial: SharedSettings.printerSerial
         )
 
         WidgetCenter.shared.reloadTimelines(ofKind: "CameraWidget")

@@ -35,6 +35,7 @@ public enum WidgetMQTTService {
         _ command: PrinterCommand,
         ip: String,
         accessCode: String,
+        serial: String,
         timeout: TimeInterval = 5
     ) async throws {
         try await withCheckedThrowingContinuation { continuation in
@@ -42,6 +43,7 @@ public enum WidgetMQTTService {
                 command: command,
                 ip: ip,
                 accessCode: accessCode,
+                serial: serial,
                 timeout: timeout,
                 continuation: continuation
             )
@@ -55,12 +57,14 @@ public enum WidgetMQTTService {
     public static func fetchSnapshot(
         ip: String,
         accessCode: String,
+        serial: String,
         timeout: TimeInterval = 5
     ) async throws -> PrinterStateSnapshot {
         try await withCheckedThrowingContinuation { continuation in
             let session = SnapshotSession(
                 ip: ip,
                 accessCode: accessCode,
+                serial: serial,
                 timeout: timeout,
                 continuation: continuation
             )
@@ -77,20 +81,24 @@ public enum WidgetMQTTService {
 private final class SnapshotSession: @unchecked Sendable {
     private let ip: String
     private let accessCode: String
+    private let serial: String
     private let timeout: TimeInterval
     private var continuation: CheckedContinuation<PrinterStateSnapshot, Error>?
     private var mqtt: CocoaMQTT?
     private let delegate = SessionDelegate()
-    private var serialNumber: String?
     private let printerState = PrinterState()
     private var hasReceivedPrintData = false
     private var timeoutTask: Task<Void, Never>?
+    private var discoveredSerial: String?
 
-    init(ip: String, accessCode: String, timeout: TimeInterval,
+    private var hasSerial: Bool { !serial.isEmpty }
+
+    init(ip: String, accessCode: String, serial: String, timeout: TimeInterval,
          continuation: CheckedContinuation<PrinterStateSnapshot, Error>)
     {
         self.ip = ip
         self.accessCode = accessCode
+        self.serial = serial
         self.timeout = timeout
         self.continuation = continuation
     }
@@ -112,8 +120,12 @@ private final class SnapshotSession: @unchecked Sendable {
             completionHandler(true)
         }
 
-        delegate.onConnected = { mqtt in
-            mqtt.subscribe("device/+/report")
+        let reportTopic = hasSerial ? "device/\(serial)/report" : "device/+/report"
+        delegate.onConnected = { [weak self] mqtt in
+            mqtt.subscribe(reportTopic)
+            if self?.hasSerial == true {
+                self?.sendPushAll(serial: self!.serial)
+            }
         }
 
         delegate.onMessage = { [weak self] topic, data in
@@ -141,16 +153,13 @@ private final class SnapshotSession: @unchecked Sendable {
     }
 
     private func handleMessage(topic: String, data: Data) {
-        // Auto-discover serial from first message topic
-        if serialNumber == nil {
+        // Auto-discover serial from first message topic when not provided
+        if !hasSerial, discoveredSerial == nil {
             let parts = topic.split(separator: "/")
             if parts.count == 3, parts[0] == "device", parts[2] == "report" {
-                serialNumber = String(parts[1])
-                sendPushAll()
+                discoveredSerial = String(parts[1])
+                sendPushAll(serial: discoveredSerial!)
             }
-            // Skip this spontaneous message — it's a partial update that
-            // arrived before our pushAll request. Wait for the full pushAll
-            // response which includes hw_ver, AMS type, etc.
             return
         }
 
@@ -169,8 +178,8 @@ private final class SnapshotSession: @unchecked Sendable {
         }
     }
 
-    private func sendPushAll() {
-        guard let mqtt, let serial = serialNumber else { return }
+    private func sendPushAll(serial: String) {
+        guard let mqtt else { return }
         let topic = "device/\(serial)/request"
 
         let pushAllData = PrinterCommand.pushAll.payload()
@@ -206,6 +215,7 @@ private final class CommandSession: @unchecked Sendable {
     private let command: PrinterCommand
     private let ip: String
     private let accessCode: String
+    private let serial: String
     private let timeout: TimeInterval
     private var continuation: CheckedContinuation<Void, Error>?
     private var mqtt: CocoaMQTT?
@@ -213,12 +223,15 @@ private final class CommandSession: @unchecked Sendable {
     private var timeoutTask: Task<Void, Never>?
     private var commandPublished = false
 
-    init(command: PrinterCommand, ip: String, accessCode: String, timeout: TimeInterval,
+    private var hasSerial: Bool { !serial.isEmpty }
+
+    init(command: PrinterCommand, ip: String, accessCode: String, serial: String, timeout: TimeInterval,
          continuation: CheckedContinuation<Void, Error>)
     {
         self.command = command
         self.ip = ip
         self.accessCode = accessCode
+        self.serial = serial
         self.timeout = timeout
         self.continuation = continuation
     }
@@ -240,16 +253,21 @@ private final class CommandSession: @unchecked Sendable {
             completionHandler(true)
         }
 
-        delegate.onConnected = { mqtt in
-            mqtt.subscribe("device/+/report")
+        let reportTopic = hasSerial ? "device/\(serial)/report" : "device/+/report"
+        delegate.onConnected = { [weak self] mqtt in
+            mqtt.subscribe(reportTopic)
+            if self?.hasSerial == true {
+                self?.publishCommand(serial: self!.serial)
+            }
         }
 
         delegate.onMessage = { [weak self] topic, _ in
             self?.handleMessage(topic: topic)
         }
 
-        delegate.onPublishAck = { [weak self] id in
-            self?.handlePublishAck(id: id)
+        delegate.onPublishAck = { [weak self] _ in
+            guard self?.commandPublished == true else { return }
+            self?.finish(with: .success(()))
         }
 
         delegate.onError = { [weak self] message in
@@ -271,24 +289,21 @@ private final class CommandSession: @unchecked Sendable {
     }
 
     private func handleMessage(topic: String) {
-        // Only handle the first message to discover the serial
-        guard !commandPublished else { return }
-
+        // Auto-discover serial from first message when not provided
+        guard !hasSerial, !commandPublished else { return }
         let parts = topic.split(separator: "/")
         guard parts.count == 3, parts[0] == "device", parts[2] == "report" else { return }
-        let serial = String(parts[1])
-
-        let requestTopic = "device/\(serial)/request"
-        let payload = command.payload()
-        if let mqtt, let json = String(data: payload, encoding: .utf8) {
-            commandPublished = true
-            mqtt.publish(requestTopic, withString: json, qos: .qos1)
-        }
+        publishCommand(serial: String(parts[1]))
     }
 
-    private func handlePublishAck(id _: UInt16) {
-        guard commandPublished else { return }
-        finish(with: .success(()))
+    private func publishCommand(serial: String) {
+        guard let mqtt, !commandPublished else { return }
+        commandPublished = true
+        let requestTopic = "device/\(serial)/request"
+        let payload = command.payload()
+        if let json = String(data: payload, encoding: .utf8) {
+            mqtt.publish(requestTopic, withString: json, qos: .qos1)
+        }
     }
 
     private func finish(with result: Result<Void, Error>) {

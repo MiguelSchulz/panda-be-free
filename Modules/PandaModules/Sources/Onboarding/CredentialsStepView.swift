@@ -15,6 +15,7 @@ struct CredentialsStepView: View {
                 InstructionRow(number: 2, text: "Navigate to **WLAN** (or Network Settings)")
                 InstructionRow(number: 3, text: "Note down the **IP Address** shown")
                 InstructionRow(number: 4, text: "Find the **Access Code** displayed under LAN Only Mode")
+                InstructionRow(number: 5, text: "Note the **Serial Number** on the Device tab — required for some printers")
             }
             .padding()
             .background(Color(.secondarySystemGroupedBackground), in: .rect(cornerRadius: 12, style: .continuous))
@@ -22,6 +23,7 @@ struct CredentialsStepView: View {
             HStack(spacing: 16) {
                 credentialCard(icon: .network, title: "IP Address", example: "192.168.1.100")
                 credentialCard(icon: .lockShield, title: "Access Code", example: "12345678")
+                credentialCard(icon: .number, title: "Serial Number", example: "01P00A000000")
             }
             .padding(.horizontal)
         }
