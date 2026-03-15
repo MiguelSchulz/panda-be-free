@@ -33,31 +33,37 @@ public struct FanGauge: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
 
-                if isEditing {
-                    HStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    if isEditing {
                         TextField("0", text: $editText)
                             .keyboardType(.numberPad)
+                            .font(.system(.callout, design: .monospaced))
                             .focused($isFocused)
                             .fixedSize()
                             .onChange(of: editText) { _, newValue in
                                 let filtered = newValue.filter { $0.isWholeNumber }
                                 if filtered != newValue { editText = filtered }
                             }
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    if #available(iOS 26, *) {
+                                        Button("Done") { isFocused = false }
+                                            .buttonStyle(.glassProminent)
+                                    } else {
+                                        Button("Done") { isFocused = false }
+                                    }
+                                }
+                            }
+                    } else {
+                        Text(percent > 0 ? "\(percent)" : "Off")
+                            .font(.system(.callout, design: .monospaced))
+                    }
+                    if percent > 0 || isEditing {
                         Text("%")
                     }
-                    .font(.system(.callout, design: .monospaced))
-                    .fontWeight(.medium)
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            Button("Done") { isFocused = false }
-                        }
-                    }
-                } else {
-                    Text(percent > 0 ? "\(percent)%" : "Off")
-                        .font(.system(.callout, design: .monospaced))
-                        .fontWeight(.medium)
                 }
+                .fontWeight(.medium)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -67,8 +73,11 @@ public struct FanGauge: View {
             guard editable, !isEditing else { return }
             originalPercent = percent
             editText = percent > 0 ? String(percent) : ""
-            isEditing = true
-            isFocused = true
+            Task {
+                try? await Task.sleep(for: .milliseconds(50))
+                isEditing = true
+                isFocused = true
+            }
         }
         .onChange(of: isFocused) { _, focused in
             if !focused, isEditing {
