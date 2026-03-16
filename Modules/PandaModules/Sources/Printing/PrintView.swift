@@ -28,6 +28,11 @@ public struct PrintView: View {
                         title: "Slicing",
                         description: "Sending file to slicer server..."
                     )
+                case .previewing:
+                    progressView(
+                        title: "Preview",
+                        description: "Building G-code preview..."
+                    )
                 case .uploading:
                     progressView(
                         title: "Uploading",
@@ -45,6 +50,9 @@ public struct PrintView: View {
                 allowedContentTypes: [.threeMF],
                 onCompletion: handleFileSelection
             )
+            .fullScreenCover(isPresented: $viewModel.isShowingPreview) {
+                GCodePreviewModal(viewModel: viewModel)
+            }
         }
     }
 
@@ -138,14 +146,29 @@ public struct PrintView: View {
             }
 
             Section {
+                if viewModel.hasPreviewCache {
+                    Button {
+                        viewModel.showCachedPreview()
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Label("Show Preview", systemSymbol: .eye)
+                                .font(.headline)
+                            Spacer()
+                        }
+                    }
+                }
+
                 Button {
-                    viewModel.startPrint()
+                    viewModel.startPreview()
                 } label: {
                     HStack {
                         Spacer()
                         Label(
-                            viewModel.metadata?.hasGcode == true ? "Print" : "Slice & Print",
-                            systemSymbol: .printerFill
+                            viewModel.hasPreviewCache
+                                ? "Re-slice & Preview"
+                                : viewModel.metadata?.hasGcode == true ? "Preview" : "Slice & Preview",
+                            systemSymbol: viewModel.hasPreviewCache ? .arrowClockwise : .eye
                         )
                         .font(.headline)
                         Spacer()
@@ -153,6 +176,9 @@ public struct PrintView: View {
                 }
                 .disabled(!viewModel.canStartPrint)
             }
+        }
+        .onAppear {
+            viewModel.resolveMissingProfiles()
         }
     }
 

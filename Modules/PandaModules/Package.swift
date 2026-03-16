@@ -20,6 +20,7 @@ let package = Package(
         .package(url: "https://github.com/hmlongco/Navigator.git", from: "2.0.0"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", from: "7.0.0"),
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", from: "1.5.1"),
+        .package(url: "https://github.com/leolobato/GCodePreview.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -82,6 +83,7 @@ let package = Package(
                 "PandaModels",
                 "PandaUI",
                 "SFSafeSymbols",
+                .product(name: "GCodePreview", package: "GCodePreview"),
             ]
         ),
         .testTarget(

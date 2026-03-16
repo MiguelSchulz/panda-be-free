@@ -1,6 +1,23 @@
 import Foundation
+import GCodePreview
 import PandaModels
+import SceneKit
 import SwiftUI
+
+extension ColorPalette {
+    /// Palette matching PandaBeFree's accent green and semantic system colors.
+    static let panda = ColorPalette(
+        filamentColors: [
+            Color(hex: 0x4DAB50), // accent green
+            Color(hex: 0x4078D9), // blue
+            Color(hex: 0xEB8C2E), // orange
+            Color(hex: 0xE6BF33), // yellow
+            Color(hex: 0xD14545), // red
+            Color(hex: 0x2E9EA8), // teal
+        ],
+        supportColor: Color(hex: 0x8C9EB3, alpha: 0.45)
+    )
+}
 
 /// Phases of the print workflow.
 public enum PrintPhase: Sendable {
@@ -9,6 +26,7 @@ public enum PrintPhase: Sendable {
     case loadingProfiles
     case configuring
     case slicing
+    case previewing
     case uploading
     case sent
     case error(String)
@@ -25,6 +43,11 @@ public final class PrintViewModel {
     public private(set) var selectedFileURL: URL?
     public private(set) var selectedFileName: String?
     public private(set) var metadata: ThreeMFMetadata?
+
+    // MARK: - Preview State
+
+    public var previewScene: SCNScene?
+    public var isShowingPreview = false
 
     // Profiles from orcaslicer-cli (filtered by configured machine)
     public private(set) var processProfiles: [ProcessProfile] = []
@@ -60,6 +83,10 @@ public final class PrintViewModel {
     @ObservationIgnored
     private var loadedFileData: Data?
 
+    /// Sliced (or pre-sliced) 3MF data, cached after preview for the final upload.
+    @ObservationIgnored
+    private var slicedFileData: Data?
+
     public init(
         amsUnitsProvider: @escaping @MainActor () -> [AMSUnit],
         mqttCommandSender: @escaping @MainActor (PrinterCommand) throws -> Void
@@ -87,6 +114,8 @@ public final class PrintViewModel {
     public func selectFile(url: URL) {
         selectedFileURL = url
         selectedFileName = url.lastPathComponent
+        slicedFileData = nil
+        previewScene = nil
         phase = .parsing
 
         activeTask?.cancel()
@@ -156,9 +185,9 @@ public final class PrintViewModel {
         }
     }
 
-    // MARK: - Print Pipeline
+    // MARK: - Preview & Print Pipeline
 
-    public func startPrint() {
+    public func startPreview() {
         guard let fileData = loadedFileData,
               let fileName = selectedFileName,
               let metadata
@@ -197,15 +226,47 @@ public final class PrintViewModel {
                 }
 
                 guard !Task.isCancelled else { return }
+                self.slicedFileData = slicedData
 
-                // 2. Build AMS mapping
+                // 2. Extract G-code and build preview scene
+                phase = .previewing
+                let box = try await Task.detached {
+                    let gcode = try ThreeMFParser.extractGCode(from: slicedData)
+                    let model = try GCodeParser().parse(gcode)
+                    let scene = PrintSceneBuilder(palette: .panda).buildScene(from: model)
+                    return SendableBox(scene)
+                }.value
+
+                guard !Task.isCancelled else { return }
+                previewScene = box.value
+                isShowingPreview = true
+            } catch {
+                guard !Task.isCancelled else { return }
+                phase = .error(error.localizedDescription)
+            }
+        }
+    }
+
+    public func confirmPrint() {
+        guard let slicedData = slicedFileData,
+              let fileName = selectedFileName,
+              let metadata
+        else { return }
+
+        isShowingPreview = false
+        previewScene = nil
+
+        activeTask?.cancel()
+        activeTask = Task {
+            do {
+                // 1. Build AMS mapping
                 let projectFilamentCount = metadata.filaments.count
                 let (amsMapping, useAMS) = AMSMappingBuilder.build(
                     from: filamentMappings,
                     projectFilamentCount: projectFilamentCount
                 )
 
-                // 3. Upload via FTPS
+                // 2. Upload via FTPS
                 phase = .uploading
                 let printerIP = SharedSettings.printerIP
                 let accessCode = SharedSettings.printerAccessCode
@@ -224,7 +285,7 @@ public final class PrintViewModel {
 
                 guard !Task.isCancelled else { return }
 
-                // 4. Send MQTT print command
+                // 3. Send MQTT print command
                 let command = PrinterCommand.projectFile(
                     filename: fileName,
                     amsMapping: amsMapping,
@@ -238,6 +299,22 @@ public final class PrintViewModel {
                 phase = .error(error.localizedDescription)
             }
         }
+    }
+
+    public func cancelPreview() {
+        isShowingPreview = false
+        phase = .configuring
+    }
+
+    /// Whether a cached preview is available to show without re-slicing.
+    public var hasPreviewCache: Bool {
+        previewScene != nil && slicedFileData != nil
+    }
+
+    /// Re-show a previously built preview without slicing again.
+    public func showCachedPreview() {
+        guard hasPreviewCache else { return }
+        isShowingPreview = true
     }
 
     private func buildFilamentProfilesPayload() -> [String: FilamentSelection] {
@@ -320,6 +397,9 @@ public final class PrintViewModel {
         selectedFileName = nil
         metadata = nil
         loadedFileData = nil
+        slicedFileData = nil
+        previewScene = nil
+        isShowingPreview = false
         processProfiles = []
         filamentProfiles = []
         selectedProcess = nil
@@ -329,4 +409,10 @@ public final class PrintViewModel {
     public func currentAMSUnits() -> [AMSUnit] {
         amsUnitsProvider()
     }
+}
+
+/// Wraps a non-Sendable value so it can cross isolation boundaries.
+private struct SendableBox<T>: @unchecked Sendable {
+    let value: T
+    init(_ value: T) { self.value = value }
 }

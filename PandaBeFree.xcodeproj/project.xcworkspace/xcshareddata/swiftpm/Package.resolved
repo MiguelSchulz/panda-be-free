@@ -1,5 +1,5 @@
 {
-  "originHash" : "821b30b378628f7808699eb46d7974529eac586d642e1b683d1458ebade655e2",
+  "originHash" : "b9aeec01550d4618f44c0f498d03fc0616bb05bf89f02c6fecb76e0ac1ffc6b7",
   "pins" : [
     {
       "identity" : "cocoamqtt",
@@ -8,6 +8,15 @@
       "state" : {
         "revision" : "3a3062c5be99f5bdb983656d18860119b831da26",
         "version" : "2.2.2"
+      }
+    },
+    {
+      "identity" : "gcodepreview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/leolobato/GCodePreview.git",
+      "state" : {
+        "revision" : "848506d2098590a0bc9d5c3b046995e5c623e1f8",
+        "version" : "1.0.1"
       }
     },
     {

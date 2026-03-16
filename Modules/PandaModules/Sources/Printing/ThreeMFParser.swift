@@ -55,6 +55,36 @@ public enum ThreeMFParser {
         )
     }
 
+    /// Extract embedded G-code text from a 3MF archive.
+    public static func extractGCode(from data: Data) throws -> String {
+        let entries = try ZIPReader.readCentralDirectory(from: data)
+
+        let gcodeEntries = entries.filter { entry in
+            let lower = entry.fileName.lowercased()
+            return lower.hasSuffix(".gcode") || lower.hasSuffix(".gco") || lower.hasSuffix(".gc") || lower.hasSuffix(".g")
+        }
+
+        guard let best = gcodeEntries.max(by: { scoreGCode($0.fileName) < scoreGCode($1.fileName) }) else {
+            throw ThreeMFError.noGCodeFound
+        }
+
+        let raw = try ZIPReader.extractEntry(best, from: data)
+        guard let text = String(data: raw, encoding: .utf8) ?? String(data: raw, encoding: .isoLatin1) else {
+            throw ThreeMFError.corruptEntry(best.fileName)
+        }
+        return text
+    }
+
+    private static func scoreGCode(_ path: String) -> Int {
+        let lower = path.lowercased()
+        var total = 0
+        if lower.contains("metadata/") { total += 20 }
+        if lower.contains("plate") { total += 10 }
+        if lower.contains("gcode/") { total += 6 }
+        if lower.hasSuffix(".gcode") { total += 3 }
+        return total
+    }
+
     // MARK: - Private
 
     private static func extractFilaments(from settings: [String: Any]) -> [ProjectFilament] {
@@ -78,6 +108,7 @@ public enum ThreeMFError: LocalizedError {
     case invalidArchive
     case missingProjectSettings
     case corruptEntry(String)
+    case noGCodeFound
 
     public var errorDescription: String? {
         switch self {
@@ -87,6 +118,8 @@ public enum ThreeMFError: LocalizedError {
             String(localized: "The 3MF file does not contain project settings.")
         case let .corruptEntry(name):
             String(localized: "Could not read entry '\(name)' from the 3MF archive.")
+        case .noGCodeFound:
+            String(localized: "No embedded G-code was found in the 3MF archive.")
         }
     }
 }
