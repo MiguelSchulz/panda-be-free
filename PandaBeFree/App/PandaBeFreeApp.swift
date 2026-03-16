@@ -87,6 +87,11 @@ struct PandaBeFreeApp: App {
                     }
                 }
                 .onNavigationReceive(assign: $selectedTab)
+                .onChange(of: printViewModel?.phase) { _, newPhase in
+                    if case .sent = newPhase {
+                        selectedTab = .dashboard
+                    }
+                }
                 .onChange(of: slicerServerURL) { _, newValue in
                     if newValue.isEmpty, selectedTab == .print {
                         selectedTab = .dashboard

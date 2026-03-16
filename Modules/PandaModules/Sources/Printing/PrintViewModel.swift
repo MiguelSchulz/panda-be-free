@@ -20,7 +20,7 @@ extension ColorPalette {
 }
 
 /// Phases of the print workflow.
-public enum PrintPhase: Sendable {
+public enum PrintPhase: Sendable, Equatable {
     case idle
     case parsing
     case loadingProfiles
@@ -48,6 +48,10 @@ public final class PrintViewModel {
 
     public var previewScene: SCNScene?
     public var isShowingPreview = false
+
+    // MARK: - Upload Progress
+
+    public private(set) var uploadProgress: Double = 0
 
     // Profiles from orcaslicer-cli (filtered by configured machine)
     public private(set) var processProfiles: [ProcessProfile] = []
@@ -268,6 +272,7 @@ public final class PrintViewModel {
 
                 // 2. Upload via FTPS
                 phase = .uploading
+                uploadProgress = 0
                 let printerIP = SharedSettings.printerIP
                 let accessCode = SharedSettings.printerAccessCode
                 guard !printerIP.isEmpty, !accessCode.isEmpty else {
@@ -280,7 +285,10 @@ public final class PrintViewModel {
                     fileData: slicedData,
                     filename: fileName,
                     printerIP: printerIP,
-                    accessCode: accessCode
+                    accessCode: accessCode,
+                    onProgress: { [weak self] progress in
+                        self?.uploadProgress = progress
+                    }
                 )
 
                 guard !Task.isCancelled else { return }
@@ -400,6 +408,7 @@ public final class PrintViewModel {
         slicedFileData = nil
         previewScene = nil
         isShowingPreview = false
+        uploadProgress = 0
         processProfiles = []
         filamentProfiles = []
         selectedProcess = nil

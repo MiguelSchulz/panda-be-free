@@ -35,10 +35,7 @@ public struct PrintView: View {
                         description: "Building G-code preview..."
                     )
                 case .uploading:
-                    progressView(
-                        title: "Uploading",
-                        description: "Uploading to printer via FTPS..."
-                    )
+                    uploadingView
                 case .sent:
                     sentView
                 case let .error(message):
@@ -190,6 +187,7 @@ public struct PrintView: View {
                     }
                 }
                 .disabled(!viewModel.canStartPrint)
+                .opacity(viewModel.canStartPrint ? 1 : 0.35)
             }
         }
         .onAppear {
@@ -206,6 +204,22 @@ public struct PrintView: View {
             VStack(spacing: 12) {
                 ProgressView()
                 Text(description)
+            }
+        }
+    }
+
+    private var uploadingView: some View {
+        ContentUnavailableView {
+            Label("Uploading", systemSymbol: .printerFill)
+        } description: {
+            VStack(spacing: 8) {
+                Text("Uploading to printer via FTPS...")
+                ProgressView(value: viewModel.uploadProgress)
+                    .padding(.horizontal, 60)
+                Text("\(Int(viewModel.uploadProgress * 100))%")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
             }
         }
     }
