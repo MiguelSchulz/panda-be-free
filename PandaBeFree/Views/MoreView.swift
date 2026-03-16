@@ -8,6 +8,7 @@ nonisolated enum MoreDestinations: NavigationDestination {
     case notifications
     case liveActivity
     case sessionLog
+    case slicerServer
 
     var body: some View {
         switch self {
@@ -19,6 +20,8 @@ nonisolated enum MoreDestinations: NavigationDestination {
             LiveActivitySettingsView()
         case .sessionLog:
             SessionLogView()
+        case .slicerServer:
+            SlicerSettingsView()
         }
     }
 }
@@ -32,6 +35,10 @@ struct MoreView: View {
         ManagedNavigationStack {
             List {
                 Section {
+                    NavigationLink(to: MoreDestinations.slicerServer) {
+                        Label("Slicer Server", systemSymbol: .serverRack)
+                    }
+
                     NavigationLink(to: MoreDestinations.notifications) {
                         Label("Notifications", systemSymbol: .bellFill)
                     }

@@ -12,6 +12,7 @@ public enum PrinterCommand {
     case stopDrying(amsId: Int)
     case amsFilamentSetting(amsId: Int, trayId: Int, trayInfoIdx: String, trayType: String,
                             trayColor: String, nozzleTempMin: Int, nozzleTempMax: Int)
+    case projectFile(filename: String, plateId: Int = 1, amsMapping: [Int], useAMS: Bool)
     case getVersion
     case pushAll
 
@@ -152,6 +153,26 @@ public enum PrinterCommand {
                 "nozzle_temp_min": nozzleTempMin,
                 "nozzle_temp_max": nozzleTempMax,
             ] as [String: Any]]
+        case let .projectFile(filename, plateId, amsMapping, useAMS):
+            ["print": [
+                "sequence_id": sequenceId,
+                "command": "project_file",
+                "param": "Metadata/plate_\(plateId).gcode",
+                "url": "file:///sdcard/cache/\(filename)",
+                "bed_type": "auto",
+                "timelapse": false,
+                "bed_leveling": true,
+                "flow_cali": false,
+                "vibration_cali": false,
+                "layer_inspect": false,
+                "use_ams": useAMS,
+                "ams_mapping": amsMapping,
+                "subtask_name": filename,
+                "profile_id": "0",
+                "project_id": "0",
+                "subtask_id": "0",
+                "task_id": "0",
+            ] as [String: Any]]
         case .getVersion:
             ["info": ["sequence_id": sequenceId, "command": "get_version"]]
         case .pushAll:
@@ -176,6 +197,7 @@ public enum PrinterCommand {
         case let .stopDrying(amsId): "stopDrying(ams: \(amsId))"
         case let .amsFilamentSetting(amsId, trayId, _, trayType, _, _, _):
             "amsFilamentSetting(ams: \(amsId), tray: \(trayId), type: \(trayType))"
+        case let .projectFile(filename, _, _, _): "projectFile(\(filename))"
         case .getVersion: "getVersion"
         case .pushAll: "pushAll"
         }

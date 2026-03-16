@@ -13,6 +13,7 @@ let package = Package(
         .library(name: "Onboarding", targets: ["Onboarding"]),
         .library(name: "PrinterControl", targets: ["PrinterControl"]),
         .library(name: "PandaNotifications", targets: ["PandaNotifications"]),
+        .library(name: "Printing", targets: ["Printing"]),
     ],
     dependencies: [
         .package(url: "https://github.com/emqx/CocoaMQTT.git", from: "2.2.1"),
@@ -75,6 +76,14 @@ let package = Package(
             name: "PandaNotifications",
             dependencies: ["PandaModels", "SFSafeSymbols"]
         ),
+        .target(
+            name: "Printing",
+            dependencies: [
+                "PandaModels",
+                "PandaUI",
+                "SFSafeSymbols",
+            ]
+        ),
         .testTarget(
             name: "PandaLoggerTests",
             dependencies: ["PandaLogger", "PandaModels"]
@@ -98,6 +107,10 @@ let package = Package(
         .testTarget(
             name: "PandaNotificationsTests",
             dependencies: ["PandaNotifications", "PandaModels"]
+        ),
+        .testTarget(
+            name: "PrintingTests",
+            dependencies: ["Printing", "PandaModels"]
         ),
     ]
 )

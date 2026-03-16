@@ -3,12 +3,22 @@ import Networking
 import Onboarding
 import PandaModels
 import PrinterControl
+import Printing
 import SFSafeSymbols
 import SwiftUI
+
+enum PrintCommandError: LocalizedError {
+    case notConnected
+
+    var errorDescription: String? {
+        "Printer is not connected. Check your connection and try again."
+    }
+}
 
 enum RootTab: Hashable {
     case dashboard
     case control
+    case print
     case more
 }
 
@@ -21,8 +31,13 @@ struct PandaBeFreeApp: App {
     private var printerIP = ""
     @AppStorage("printerAccessCode", store: UserDefaults(suiteName: SharedSettings.suiteName))
     private var accessCode = ""
+    @AppStorage("slicerServerURL", store: UserDefaults(suiteName: SharedSettings.suiteName))
+    private var slicerServerURL = ""
+    @AppStorage("slicerMachineId", store: UserDefaults(suiteName: SharedSettings.suiteName))
+    private var slicerMachineId = ""
     @State private var selectedTab: RootTab = .dashboard
     @State private var dashboardViewModel = DashboardViewModel()
+    @State private var printViewModel: PrintViewModel?
 
     private var hasConfig: Bool {
         !printerIP.isEmpty && !accessCode.isEmpty
@@ -30,6 +45,21 @@ struct PandaBeFreeApp: App {
 
     init() {
         SharedSettings.migrateFromStandardDefaults()
+    }
+
+    private func makePrintViewModel() -> PrintViewModel {
+        let viewModel = dashboardViewModel
+        return PrintViewModel(
+            amsUnitsProvider: { @MainActor in
+                viewModel.printerState.amsUnits
+            },
+            mqttCommandSender: { @MainActor command in
+                guard viewModel.mqttServiceRef.connectionState == .connected else {
+                    throw PrintCommandError.notConnected
+                }
+                viewModel.mqttServiceRef.sendCommand(command)
+            }
+        )
     }
 
     var body: some Scene {
@@ -47,11 +77,33 @@ struct PandaBeFreeApp: App {
                             printerState: dashboardViewModel.printerState
                         )
                     }
+                    if !slicerServerURL.isEmpty, !slicerMachineId.isEmpty {
+                        Tab("Print", systemImage: SFSymbol.cubeTransparent.rawValue, value: RootTab.print) {
+                            PrintView(viewModel: printViewModel ?? makePrintViewModel())
+                        }
+                    }
                     Tab("More", systemImage: SFSymbol.ellipsisCircle.rawValue, value: RootTab.more) {
                         MoreView()
                     }
                 }
                 .onNavigationReceive(assign: $selectedTab)
+                .onChange(of: slicerServerURL) { _, newValue in
+                    if newValue.isEmpty, selectedTab == .print {
+                        selectedTab = .dashboard
+                    }
+                    printViewModel = nil
+                }
+                .onChange(of: slicerMachineId) { _, newValue in
+                    if newValue.isEmpty, selectedTab == .print {
+                        selectedTab = .dashboard
+                    }
+                    printViewModel = nil
+                }
+                .task {
+                    if printViewModel == nil, !slicerServerURL.isEmpty, !slicerMachineId.isEmpty {
+                        printViewModel = makePrintViewModel()
+                    }
+                }
             } else {
                 OnboardingRootView { ip, accessCode, serial, printerModel in
                     await ConnectionTestService.testConnection(

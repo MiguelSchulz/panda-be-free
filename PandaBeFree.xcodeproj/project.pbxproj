@@ -23,6 +23,7 @@
 		CC50085008500850085008AA /* Networking in Frameworks */ = {isa = PBXBuildFile; productRef = CC60086008600860086008AA /* Networking */; };
 		CC50089008900890089004CC /* PandaNotifications in Frameworks */ = {isa = PBXBuildFile; productRef = CC60089008900890089004CC /* PandaNotifications */; };
 		F88F3EB72F60654E00BFA018 /* NavigatorUI in Frameworks */ = {isa = PBXBuildFile; productRef = CC90019001900190019001AA /* NavigatorUI */; };
+		CC50042004200420042005DD /* Printing in Frameworks */ = {isa = PBXBuildFile; productRef = CC60042004200420042005DD /* Printing */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -94,6 +95,7 @@
 				CC50040004000400040004BB /* PrinterControl in Frameworks */,
 				CC50041004100410041004CC /* PandaNotifications in Frameworks */,
 				CC50042004200420042004DD /* PandaLogger in Frameworks */,
+				CC50042004200420042005DD /* Printing in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,6 +201,7 @@
 				CC60040004000400040004BB /* PrinterControl */,
 				CC60041004100410041004CC /* PandaNotifications */,
 				CC60042004200420042004DD /* PandaLogger */,
+				CC60042004200420042005DD /* Printing */,
 				CC90019001900190019001AA /* NavigatorUI */,
 			);
 			productName = PandaBeFree;
@@ -661,6 +664,10 @@
 		CC60042004200420042004DD /* PandaLogger */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = PandaLogger;
+		};
+		CC60042004200420042005DD /* Printing */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Printing;
 		};
 		CC60046004600460046004AA /* PandaModels */ = {
 			isa = XCSwiftPackageProductDependency;

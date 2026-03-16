@@ -69,6 +69,16 @@ public enum SharedSettings {
         set { sharedDefaults?.set(newValue.rawValue, forKey: "printerType") }
     }
 
+    public static var slicerServerURL: String {
+        get { sharedDefaults?.string(forKey: "slicerServerURL") ?? "" }
+        set { sharedDefaults?.set(newValue, forKey: "slicerServerURL") }
+    }
+
+    public static var slicerMachineId: String {
+        get { sharedDefaults?.string(forKey: "slicerMachineId") ?? "" }
+        set { sharedDefaults?.set(newValue, forKey: "slicerMachineId") }
+    }
+
     public static var hasConfiguration: Bool {
         !printerIP.isEmpty && !printerAccessCode.isEmpty
     }
