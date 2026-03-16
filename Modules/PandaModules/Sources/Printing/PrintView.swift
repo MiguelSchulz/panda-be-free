@@ -1,3 +1,4 @@
+import ImageIO
 import PandaModels
 import PandaUI
 import SFSafeSymbols
@@ -107,9 +108,21 @@ public struct PrintView: View {
                             Image(systemSymbol: .docFill)
                         }
                     }
+
+                    if let thumbnailData = viewModel.metadata?.thumbnailData,
+                       let source = CGImageSourceCreateWithData(thumbnailData as CFData, nil),
+                       let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
+                    {
+                        Image(cgImage, scale: 1, label: Text("Thumbnail"))
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                    }
                 } header: {
                     Text("File")
                 }
+                .headerProminence(.increased)
             }
 
             Section {
@@ -124,6 +137,7 @@ public struct PrintView: View {
             } header: {
                 Text("Profile")
             }
+            .headerProminence(.increased)
 
             if !viewModel.filamentMappings.isEmpty {
                 Section {
@@ -143,6 +157,7 @@ public struct PrintView: View {
                 } header: {
                     Text("Filament Mapping")
                 }
+                .headerProminence(.increased)
             }
 
             Section {

@@ -7,6 +7,7 @@ public struct ThreeMFMetadata: Sendable {
     public let hasGcode: Bool
     public let printerModel: String
     public let printSettingsId: String
+    public let thumbnailData: Data?
 }
 
 /// A filament slot defined in the 3MF project.
@@ -47,11 +48,15 @@ public enum ThreeMFParser {
         let printerModel = (json["printer_model"] as? String) ?? ""
         let printSettingsId = (json["print_settings_id"] as? String) ?? ""
 
+        // Extract plate thumbnail (prefer plate_1.png, fall back to any plate PNG)
+        let thumbnailData = extractThumbnail(from: entries, archiveData: data)
+
         return ThreeMFMetadata(
             filaments: filaments,
             hasGcode: hasGcode,
             printerModel: printerModel,
-            printSettingsId: printSettingsId
+            printSettingsId: printSettingsId,
+            thumbnailData: thumbnailData
         )
     }
 
@@ -86,6 +91,30 @@ public enum ThreeMFParser {
     }
 
     // MARK: - Private
+
+    private static func extractThumbnail(from entries: [ZIPReader.Entry], archiveData: Data) -> Data? {
+        // Prefer Metadata/plate_1.png, then any Metadata/plate_*.png, then Thumbnails/*.png
+        let candidates = entries.filter { entry in
+            let lower = entry.fileName.lowercased()
+            return lower.hasSuffix(".png") && (lower.contains("metadata/plate_") || lower.contains("thumbnails/"))
+        }.sorted { lhs, rhs in
+            score(thumbnailPath: lhs.fileName) > score(thumbnailPath: rhs.fileName)
+        }
+
+        guard let best = candidates.first else { return nil }
+        return try? ZIPReader.extractEntry(best, from: archiveData)
+    }
+
+    private static func score(thumbnailPath path: String) -> Int {
+        let lower = path.lowercased()
+        var total = 0
+        if lower.contains("metadata/") { total += 20 }
+        if lower.contains("plate_1") { total += 10 }
+        if lower.contains("plate_") { total += 5 }
+        // Prefer larger thumbnails (top_* variants in Bambu files are smaller)
+        if lower.contains("top_") { total -= 5 }
+        return total
+    }
 
     private static func extractFilaments(from settings: [String: Any]) -> [ProjectFilament] {
         guard let types = settings["filament_type"] as? [String] else { return [] }
