@@ -13,12 +13,14 @@ let package = Package(
         .library(name: "Onboarding", targets: ["Onboarding"]),
         .library(name: "PrinterControl", targets: ["PrinterControl"]),
         .library(name: "PandaNotifications", targets: ["PandaNotifications"]),
+        .library(name: "Printing", targets: ["Printing"]),
     ],
     dependencies: [
         .package(url: "https://github.com/emqx/CocoaMQTT.git", from: "2.2.1"),
         .package(url: "https://github.com/hmlongco/Navigator.git", from: "2.0.0"),
         .package(url: "https://github.com/SFSafeSymbols/SFSafeSymbols.git", from: "7.0.0"),
         .package(url: "https://github.com/markiv/SwiftUI-Shimmer.git", from: "1.5.1"),
+        .package(url: "https://github.com/leolobato/GCodePreview.git", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -75,6 +77,16 @@ let package = Package(
             name: "PandaNotifications",
             dependencies: ["PandaModels", "SFSafeSymbols"]
         ),
+        .target(
+            name: "Printing",
+            dependencies: [
+                "PandaModels",
+                "PandaLogger",
+                "PandaUI",
+                "SFSafeSymbols",
+                .product(name: "GCodePreview", package: "GCodePreview"),
+            ]
+        ),
         .testTarget(
             name: "PandaLoggerTests",
             dependencies: ["PandaLogger", "PandaModels"]
@@ -98,6 +110,10 @@ let package = Package(
         .testTarget(
             name: "PandaNotificationsTests",
             dependencies: ["PandaNotifications", "PandaModels"]
+        ),
+        .testTarget(
+            name: "PrintingTests",
+            dependencies: ["Printing", "PandaModels"]
         ),
     ]
 )
