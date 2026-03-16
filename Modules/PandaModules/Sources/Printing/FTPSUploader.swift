@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import PandaLogger
 
 /// Uploads files to Bambu Lab printers via implicit FTPS (port 990).
 ///
@@ -8,35 +9,28 @@ import Network
 public actor FTPSUploader {
     private static let ftpsPort: UInt16 = 990
     private static let username = "bblp"
-    /// Timeout for connecting and individual FTP command responses.
     private static let commandTimeout: Duration = .seconds(30)
-    /// Timeout for the file transfer completion response (226).
     private static let transferTimeout: Duration = .seconds(120)
 
-    /// Persistent read buffer for the control connection. TCP can deliver
-    /// multiple FTP replies in a single read (e.g. `150 ...\r\n226 ...\r\n`),
-    /// so we buffer unread data between `readResponse` calls.
+    /// Read buffer for the control connection — TCP can deliver multiple
+    /// FTP replies in a single read, so we buffer between calls.
     private var controlBuffer = ""
 
     public init() {}
 
     /// Upload file data to the printer's `/cache/` directory.
-    ///
-    /// - Parameters:
-    ///   - fileData: The file contents to upload.
-    ///   - filename: The destination filename (e.g. `model.3mf`).
-    ///   - printerIP: The printer's local IP address.
-    ///   - accessCode: The printer's access code (used as FTP password).
-    /// - Returns: The remote path of the uploaded file.
     @discardableResult
     public func upload(
         fileData: Data,
         filename: String,
         printerIP: String,
-        accessCode: String
+        accessCode: String,
+        onProgress: (@MainActor (Double) -> Void)? = nil
     ) async throws -> String {
         let remotePath = "/cache/\(filename)"
         controlBuffer = ""
+
+        SessionLogger.shared.log(.info, category: "FTPS", "Connecting to \(printerIP):\(Self.ftpsPort)")
 
         // Control connection
         let control = try await withTimeout(Self.commandTimeout) {
@@ -44,36 +38,23 @@ public actor FTPSUploader {
         }
         defer { control.cancel() }
 
-        // Read welcome banner
         _ = try await readResponse(control, timeout: Self.commandTimeout)
 
         // Login
         try await sendCommand(control, "USER \(Self.username)")
-        let userResp = try await readResponse(control, timeout: Self.commandTimeout)
-        guard userResp.hasPrefix("331") else {
-            throw FTPSError.loginFailed("USER rejected: \(userResp)")
-        }
+        try await expectReply(control, prefix: "331", or: "USER rejected")
 
         try await sendCommand(control, "PASS \(accessCode)")
-        let passResp = try await readResponse(control, timeout: Self.commandTimeout)
-        guard passResp.hasPrefix("230") else {
-            throw FTPSError.loginFailed("PASS rejected: \(passResp)")
-        }
+        try await expectReply(control, prefix: "230", or: "PASS rejected")
 
-        // Enable data channel protection (required by Bambu printers)
+        // Data channel protection (required by Bambu printers)
         try await sendCommand(control, "PBSZ 0")
-        let pbszResp = try await readResponse(control, timeout: Self.commandTimeout)
-        guard pbszResp.hasPrefix("200") else {
-            throw FTPSError.commandFailed("PBSZ", pbszResp)
-        }
+        try await expectReply(control, prefix: "200", or: "PBSZ failed")
 
         try await sendCommand(control, "PROT P")
-        let protResp = try await readResponse(control, timeout: Self.commandTimeout)
-        guard protResp.hasPrefix("200") else {
-            throw FTPSError.commandFailed("PROT P", protResp)
-        }
+        try await expectReply(control, prefix: "200", or: "PROT P failed")
 
-        // Create /cache directory (ignore 550 = already exists)
+        // Create /cache directory (550 = already exists)
         try await sendCommand(control, "MKD /cache")
         let mkdResp = try await readResponse(control, timeout: Self.commandTimeout)
         if !mkdResp.hasPrefix("257"), !mkdResp.hasPrefix("550") {
@@ -82,12 +63,9 @@ public actor FTPSUploader {
 
         // Binary mode
         try await sendCommand(control, "TYPE I")
-        let typeResp = try await readResponse(control, timeout: Self.commandTimeout)
-        guard typeResp.hasPrefix("200") else {
-            throw FTPSError.commandFailed("TYPE I", typeResp)
-        }
+        try await expectReply(control, prefix: "200", or: "TYPE I failed")
 
-        // Passive mode — get data channel address
+        // Passive mode
         try await sendCommand(control, "PASV")
         let pasvResp = try await readResponse(control, timeout: Self.commandTimeout)
         guard pasvResp.hasPrefix("227") else {
@@ -95,12 +73,12 @@ public actor FTPSUploader {
         }
         let (dataHost, dataPort) = try parsePASV(pasvResp, fallbackHost: printerIP)
 
-        // Open data connection with TLS
+        // Data connection
         let dataConn = try await withTimeout(Self.commandTimeout) {
             try await self.connectTLS(host: dataHost, port: dataPort)
         }
 
-        // STOR command
+        // STOR
         try await sendCommand(control, "STOR \(remotePath)")
         let storResp = try await readResponse(control, timeout: Self.commandTimeout)
         guard storResp.hasPrefix("150") || storResp.hasPrefix("125") else {
@@ -108,39 +86,58 @@ public actor FTPSUploader {
             throw FTPSError.commandFailed("STOR", storResp)
         }
 
-        // Send file data in chunks
-        try await sendData(dataConn, fileData)
+        // Upload file data
+        SessionLogger.shared.log(.info, category: "FTPS", "Uploading \(fileData.count) bytes to \(remotePath)")
+        try await sendData(dataConn, fileData, onProgress: onProgress)
 
-        // Close data connection to signal end of transfer
+        // Close data connection to signal end of transfer (don't use TLS close_notify —
+        // Bambu printers don't respond to it, causing a hang)
         dataConn.cancel()
 
-        // Wait for transfer complete (longer timeout — depends on file size)
+        // Wait for transfer complete
         let transferResp = try await readResponse(control, timeout: Self.transferTimeout)
         guard transferResp.hasPrefix("226") else {
             throw FTPSError.transferFailed(transferResp)
         }
 
-        // Quit
         try? await sendCommand(control, "QUIT")
+        SessionLogger.shared.log(.info, category: "FTPS", "Upload complete: \(remotePath)")
 
         return remotePath
     }
 
-    // MARK: - NWConnection helpers
+    // MARK: - FTP Helpers
+
+    /// Send a command and verify the response starts with the expected prefix.
+    private func expectReply(
+        _ connection: NWConnection,
+        prefix: String,
+        or errorMessage: String
+    ) async throws {
+        let resp = try await readResponse(connection, timeout: Self.commandTimeout)
+        guard resp.hasPrefix(prefix) else {
+            throw FTPSError.commandFailed(errorMessage, resp)
+        }
+    }
+
+    // MARK: - NWConnection
 
     private func connectTLS(host: String, port: UInt16) async throws -> NWConnection {
         let tlsOptions = NWProtocolTLS.Options()
+        let secOptions = tlsOptions.securityProtocolOptions
+
+        sec_protocol_options_set_min_tls_protocol_version(secOptions, .TLSv12)
+        sec_protocol_options_set_max_tls_protocol_version(secOptions, .TLSv13)
 
         // Accept self-signed Bambu certificates
-        sec_protocol_options_set_verify_block(
-            tlsOptions.securityProtocolOptions,
-            { _, _, completionHandler in
-                completionHandler(true)
-            },
-            DispatchQueue.global()
-        )
+        sec_protocol_options_set_verify_block(secOptions, { _, _, completionHandler in
+            completionHandler(true)
+        }, DispatchQueue.global())
 
-        let params = NWParameters(tls: tlsOptions, tcp: .init())
+        let tcpOptions = NWProtocolTCP.Options()
+        tcpOptions.connectionTimeout = 15
+
+        let params = NWParameters(tls: tlsOptions, tcp: tcpOptions)
         let connection = NWConnection(
             host: NWEndpoint.Host(host),
             port: NWEndpoint.Port(rawValue: port)!,
@@ -159,6 +156,8 @@ public actor FTPSUploader {
                 case .cancelled:
                     connection.stateUpdateHandler = nil
                     continuation.resume(throwing: FTPSError.connectionFailed("Connection cancelled"))
+                case let .waiting(error):
+                    SessionLogger.shared.log(.warning, category: "FTPS", "Connection waiting: \(error.localizedDescription)")
                 default:
                     break
                 }
@@ -180,20 +179,14 @@ public actor FTPSUploader {
         }
     }
 
-    /// Read exactly one complete FTP response from the control connection.
-    ///
-    /// Uses `controlBuffer` to handle the case where TCP delivers multiple
-    /// FTP replies in a single read. Returns only the first complete reply
-    /// and leaves any remainder in the buffer for the next call.
+    /// Read exactly one complete FTP reply from the control connection.
     private func readResponse(_ connection: NWConnection, timeout: Duration) async throws -> String {
         try await withTimeout(timeout) {
             while true {
-                // Check if we already have a complete reply in the buffer
                 if let reply = await self.extractFirstReply() {
                     return reply
                 }
 
-                // Need more data from the network
                 let chunk: String = try await withCheckedThrowingContinuation { continuation in
                     connection.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, _, error in
                         if let error {
@@ -214,63 +207,67 @@ public actor FTPSUploader {
         controlBuffer += text
     }
 
-    /// Try to extract the first complete FTP reply from `controlBuffer`.
+    /// Extract the first complete FTP reply from the buffer.
     ///
-    /// A complete reply ends with `\r\n` and the final line starts with
-    /// 3 digits followed by a space (e.g. `230 Login successful\r\n`).
-    /// Multi-line replies use `NNN-` for continuation and `NNN ` for the last line.
-    /// Returns the reply text (trimmed) and removes it from the buffer, or nil
-    /// if no complete reply is available yet.
+    /// Uses UTF-8 bytes directly because Swift treats `\r\n` as a single
+    /// Character (grapheme cluster), which breaks character-level offset math.
     private func extractFirstReply() -> String? {
-        let lines = controlBuffer.split(separator: "\r\n", omittingEmptySubsequences: false)
+        let utf8 = controlBuffer.utf8
+        let cr = UInt8(ascii: "\r")
+        let lf = UInt8(ascii: "\n")
+        let space = UInt8(ascii: " ")
 
-        // Walk lines looking for a final reply line (NNN<space>)
-        var endIndex = controlBuffer.startIndex
-        for line in lines {
-            guard !line.isEmpty else {
-                // Skip empty segments (from leading/trailing \r\n)
-                endIndex = controlBuffer.index(endIndex, offsetBy: line.count + 2, limitedBy: controlBuffer.endIndex) ?? controlBuffer.endIndex
-                continue
-            }
-
-            // Advance past this line + \r\n
-            let lineEndCandidate = controlBuffer.index(endIndex, offsetBy: line.count + 2, limitedBy: controlBuffer.endIndex)
-            guard let lineEnd = lineEndCandidate else {
-                // Line isn't fully terminated by \r\n yet — need more data
+        var lineStart = utf8.startIndex
+        while lineStart < utf8.endIndex {
+            guard let crIndex = utf8[lineStart...].firstIndex(of: cr),
+                  utf8.index(after: crIndex) < utf8.endIndex,
+                  utf8[utf8.index(after: crIndex)] == lf
+            else {
                 return nil
             }
 
-            // Check if this is a final reply line: "NNN " pattern
-            if line.count >= 4,
-               line.prefix(3).allSatisfy(\.isNumber),
-               line[line.index(line.startIndex, offsetBy: 3)] == " "
+            let lineEnd = utf8.index(crIndex, offsetBy: 2)
+            let lineBytes = utf8[lineStart..<crIndex]
+
+            // Final reply line: "NNN " (3 digits + space)
+            if lineBytes.count >= 4,
+               lineBytes.prefix(3).allSatisfy({ $0 >= 0x30 && $0 <= 0x39 }),
+               lineBytes[lineBytes.index(lineBytes.startIndex, offsetBy: 3)] == space
             {
-                let reply = String(controlBuffer[controlBuffer.startIndex..<lineEnd])
+                let replyEnd = String.Index(lineEnd, within: controlBuffer) ?? controlBuffer.endIndex
+                let reply = String(controlBuffer[controlBuffer.startIndex..<replyEnd])
                     .trimmingCharacters(in: .whitespacesAndNewlines)
-                controlBuffer = String(controlBuffer[lineEnd...])
+                controlBuffer = String(controlBuffer[replyEnd...])
                 return reply
             }
 
-            endIndex = lineEnd
+            lineStart = lineEnd
         }
 
         return nil
     }
 
-    private func sendData(_ connection: NWConnection, _ data: Data) async throws {
-        let chunkSize = 32768 // 32KB chunks
+    /// Send file data in chunks. All chunks use `.defaultMessage` — the Bambu printer's
+    /// FTPS server doesn't respond to TLS close_notify, so we signal end-of-transfer
+    /// by cancelling the connection instead of using `.finalMessage`.
+    private func sendData(
+        _ connection: NWConnection,
+        _ data: Data,
+        onProgress: (@MainActor (Double) -> Void)? = nil
+    ) async throws {
+        let chunkSize = 32768
         var offset = 0
+        let total = data.count
 
-        while offset < data.count {
-            let end = min(offset + chunkSize, data.count)
+        while offset < total {
+            let end = min(offset + chunkSize, total)
             let chunk = data[offset..<end]
-            let isComplete = end == data.count
 
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
                 connection.send(
                     content: chunk,
-                    contentContext: isComplete ? .finalMessage : .defaultMessage,
-                    isComplete: isComplete,
+                    contentContext: .defaultMessage,
+                    isComplete: false,
                     completion: .contentProcessed { error in
                         if let error {
                             continuation.resume(throwing: FTPSError.sendFailed(error.localizedDescription))
@@ -281,10 +278,14 @@ public actor FTPSUploader {
                 )
             }
             offset = end
+
+            if let onProgress {
+                let fraction = Double(offset) / Double(total)
+                await onProgress(fraction)
+            }
         }
     }
 
-    /// Parse PASV response like `227 Entering Passive Mode (192,168,1,1,4,1)` into host:port.
     private func parsePASV(_ response: String, fallbackHost: String) throws -> (String, UInt16) {
         guard let openParen = response.firstIndex(of: "("),
               let closeParen = response.firstIndex(of: ")")
@@ -298,30 +299,38 @@ public actor FTPSUploader {
             throw FTPSError.commandFailed("PASV", "Unexpected PASV format: \(response)")
         }
 
-        // Use fallback host (the printer IP) — the PASV-reported IP may be unreachable
         let port = parts[4] * 256 + parts[5]
         return (fallbackHost, port)
     }
 
-    // MARK: - Timeout helper
+    // MARK: - Timeout
 
-    private func withTimeout<T: Sendable>(
+    /// Race an operation against a deadline. Uses unstructured concurrency because
+    /// `withThrowingTaskGroup` waits for ALL child tasks — a stuck NWConnection
+    /// callback would prevent the timeout from taking effect.
+    private nonisolated func withTimeout<T: Sendable>(
         _ duration: Duration,
         operation: @Sendable @escaping () async throws -> T
     ) async throws -> T {
-        try await withThrowingTaskGroup(of: T.self) { group in
-            group.addTask {
-                try await operation()
+        let gate = TimeoutGate()
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let operationTask = Task {
+                do {
+                    let result = try await operation()
+                    if gate.claim() { continuation.resume(returning: result) }
+                } catch {
+                    if gate.claim() { continuation.resume(throwing: error) }
+                }
             }
-            group.addTask {
-                try await Task.sleep(for: duration)
-                throw FTPSError.timeout
+
+            Task {
+                try? await Task.sleep(for: duration)
+                if gate.claim() {
+                    operationTask.cancel()
+                    continuation.resume(throwing: FTPSError.timeout)
+                }
             }
-            guard let result = try await group.next() else {
-                throw FTPSError.timeout
-            }
-            group.cancelAll()
-            return result
         }
     }
 }
@@ -352,5 +361,19 @@ public enum FTPSError: LocalizedError {
         case .timeout:
             "FTPS operation timed out"
         }
+    }
+}
+
+/// Thread-safe one-shot gate for timeout races.
+private final class TimeoutGate: @unchecked Sendable {
+    private let lock = NSLock()
+    private var claimed = false
+
+    func claim() -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        if claimed { return false }
+        claimed = true
+        return true
     }
 }

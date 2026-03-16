@@ -81,6 +81,7 @@ let package = Package(
             name: "Printing",
             dependencies: [
                 "PandaModels",
+                "PandaLogger",
                 "PandaUI",
                 "SFSafeSymbols",
                 .product(name: "GCodePreview", package: "GCodePreview"),
